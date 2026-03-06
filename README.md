@@ -1,6 +1,6 @@
-# claude-ersilia-skills
+# Claude Code Skills for the Ersilia Model Hub
 
-A collection of Claude Code skills for the [Ersilia Open Source Initiative](https://ersilia.io), supporting drug discovery and AI-assisted model management for the [Ersilia Model Hub](https://github.com/ersilia-os/ersilia).
+A collection of Claude Code skills to assist contributors in incorporating, testing, and publishing AI/ML models to the [Ersilia Model Hub](https://github.com/ersilia-os/ersilia).
 
 ## What is this?
 
@@ -52,6 +52,12 @@ claude-ersilia-skills/
 ## Contributing
 
 Skills for `publish-model` and `test-model` are planned for future additions. Contributions are welcome via pull request.
+
+## About Ersilia
+
+The [Ersilia Open Source Initiative](https://ersilia.io) is a tech non-profit with the mission to equip laboratories, universities, and clinics in the Global South with AI/ML tools for infectious disease research. Ersilia operates according to the principles of open science, decolonized research, and egalitarian access to knowledge.
+
+The [Ersilia Model Hub](https://github.com/ersilia-os/ersilia) is Ersilia's flagship project — a unified platform of pre-trained AI/ML models for infectious and neglected disease research, covering areas such as antibiotic activity prediction, ADMET prediction, molecular representation, and generative chemistry.
 
 ## License
 
