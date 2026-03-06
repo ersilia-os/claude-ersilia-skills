@@ -1,0 +1,8 @@
+{
+  "name": "claude-ersilia-skills",
+  "description": "Claude Code skills to assist contributors in incorporating, testing, and publishing AI/ML models to the Ersilia Model Hub",
+  "author": {
+    "name": "Ersilia Open Source Initiative",
+    "email": "hello@ersilia.io"
+  }
+}
