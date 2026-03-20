@@ -1,6 +1,6 @@
 ---
 description: Take structured meeting minutes dynamically, aware of the agenda and action items
-argument-hint: [--agenda <path>] [--attendees <names>] [--output <path>]
+argument-hint: "[--agenda <path>] [--attendees <names>] [--output <path>]"
 allowed-tools: [Read, Write, AskUserQuestion]
 ---
 

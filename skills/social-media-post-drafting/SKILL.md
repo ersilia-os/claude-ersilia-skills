@@ -1,6 +1,6 @@
 ---
 description: Draft social media posts for Ersilia based on the content schedule and available material
-argument-hint: [--schedule <path>] [--topic <topic>] [--platform <twitter|linkedin|instagram|all>]
+argument-hint: "[--schedule <path>] [--topic <topic>] [--platform <twitter|linkedin|instagram|all>]"
 allowed-tools: [Read, WebFetch, Write, AskUserQuestion]
 ---
 

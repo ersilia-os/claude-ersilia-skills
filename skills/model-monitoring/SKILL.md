@@ -1,6 +1,6 @@
 ---
 description: Monitor Ersilia Model Hub for unused models, stored data, and maintenance needs
-argument-hint: [--threshold-days <n>] [--output <path>]
+argument-hint: "[--threshold-days <n>] [--output <path>]"
 allowed-tools: [Bash, WebFetch, Read, Write, AskUserQuestion]
 ---
 

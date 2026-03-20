@@ -1,6 +1,6 @@
 ---
 description: Discover relevant events for Ersilia and produce a classified summary report
-argument-hint: [--horizon <days>] [--category <science|philanthropy|local|global|all>]
+argument-hint: "[--horizon <days>] [--category <science|philanthropy|local|global|all>]"
 allowed-tools: [WebSearch, WebFetch, Write, AskUserQuestion]
 ---
 

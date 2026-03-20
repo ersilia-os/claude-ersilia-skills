@@ -1,6 +1,6 @@
 ---
 description: Draft Ersilia's monthly newsletter from recent updates, publications, and activities
-argument-hint: [--month <YYYY-MM>] [--sources <path>]
+argument-hint: "[--month <YYYY-MM>] [--sources <path>]"
 allowed-tools: [Read, WebFetch, WebSearch, Write, AskUserQuestion]
 ---
 

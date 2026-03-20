@@ -1,6 +1,6 @@
 ---
 description: Track and summarise open issues across Ersilia's GitHub repositories for tech meetings
-argument-hint: [--repo <repo>] [--label <label>] [--limit <n>]
+argument-hint: "[--repo <repo>] [--label <label>] [--limit <n>]"
 allowed-tools: [Bash, Write, AskUserQuestion]
 ---
 

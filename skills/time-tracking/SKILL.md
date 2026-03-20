@@ -1,6 +1,6 @@
 ---
 description: Analyse how Ersilia team members have been spending time and assess alignment with objectives
-argument-hint: [--user <name-or-email>] [--period <YYYY-MM>] [--source <path>]
+argument-hint: "[--user <name-or-email>] [--period <YYYY-MM>] [--source <path>]"
 allowed-tools: [Read, Write, AskUserQuestion]
 ---
 

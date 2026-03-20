@@ -1,6 +1,6 @@
 ---
 description: Suggest content topics for Ersilia's social media, blog, and newsletter
-argument-hint: [--n <number>] [--channel <social|blog|newsletter|all>] [--theme <theme>]
+argument-hint: "[--n <number>] [--channel <social|blog|newsletter|all>] [--theme <theme>]"
 allowed-tools: [WebSearch, WebFetch, Read, Write, AskUserQuestion]
 ---
 

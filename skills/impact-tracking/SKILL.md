@@ -1,6 +1,6 @@
 ---
 description: Summarise Ersilia's impact across social media, website, and model hub metrics
-argument-hint: [--period <YYYY-MM>] [--sources <path>]
+argument-hint: "[--period <YYYY-MM>] [--sources <path>]"
 allowed-tools: [Read, WebFetch, WebSearch, Write, AskUserQuestion]
 ---
 

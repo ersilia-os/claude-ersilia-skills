@@ -1,6 +1,6 @@
 ---
 description: Track usage and costs of compute resources across Ersilia's network
-argument-hint: [--source <path-or-url>] [--period <YYYY-MM>]
+argument-hint: "[--source <path-or-url>] [--period <YYYY-MM>]"
 allowed-tools: [Read, Bash, Write, AskUserQuestion]
 ---
 

@@ -1,6 +1,6 @@
 ---
 description: Review scientific literature to find AI/ML models and datasets relevant to Ersilia's mission
-argument-hint: [--topic <topic>] [--n <number>] [--since <YYYY>]
+argument-hint: "[--topic <topic>] [--n <number>] [--since <YYYY>]"
 allowed-tools: [WebSearch, WebFetch, Read, Write, AskUserQuestion]
 ---
 

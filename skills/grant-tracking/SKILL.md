@@ -1,6 +1,6 @@
 ---
 description: Track existing grants, discover new opportunities, and highlight key timelines for Ersilia
-argument-hint: [--source <url-or-file>] [--status <active|upcoming|closed>]
+argument-hint: "[--source <url-or-file>] [--status <active|upcoming|closed>]"
 allowed-tools: [WebFetch, WebSearch, Read, Write, AskUserQuestion]
 ---
 
