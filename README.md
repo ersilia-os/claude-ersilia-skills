@@ -44,7 +44,7 @@ Ersilia's work spans science, technology, communications, and operations. Much o
 | **Science** | [peer-reviewing](skills/science/peer-reviewing/) | Emulate a peer review of a manuscript and suggest how to address reviewer-style changes | `scaffold` |
 | **Science** | [article-formatting](skills/science/article-formatting/) | Reformat a manuscript to match a target journal's figure and section requirements | `scaffold` |
 | **Science** | [molecule-auditing](skills/science/molecule-auditing/) | Audit small molecules from an Ersilia screening and score them according to drug discovery parameters | `scaffold` |
-| **Day-to-day** | [slack-summaries](skills/day-to-day/slack-summaries/) | Summarise recent Slack activity and surface prioritised action items | `scaffold` |
+| **Day-to-day** | [slack-summaries](skills/day-to-day/slack-summaries/) | Summarise recent Slack activity and surface prioritised action items | `draft` |
 | **Day-to-day** | [calendars](skills/day-to-day/calendars/) | Check availability, suggest timeslots, and create calendar events or meeting invites | `scaffold` |
 | **Day-to-day** | [time-tracking](skills/day-to-day/time-tracking/) | Analyse how team members have been spending time and assess alignment with objectives | `scaffold` |
 | **Day-to-day** | [meeting-minutes](skills/day-to-day/meeting-minutes/) | Take structured meeting minutes dynamically, aware of the agenda and action items | `scaffold` |
