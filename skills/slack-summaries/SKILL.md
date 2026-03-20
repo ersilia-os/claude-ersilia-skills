@@ -1,6 +1,6 @@
 ---
 description: Summarise your Slack activity, surface unanswered messages, and identify what you need to respond to
-argument-hint: [--since <YYYY-MM-DD|Nd|Nw>] [--channels <ch1,ch2>] [--me <slack-username>]
+argument-hint: "--since <YYYY-MM-DD|Nd|Nw> --channels <ch1,ch2> --me <slack-username>"
 allowed-tools: [AskUserQuestion]
 ---
 
