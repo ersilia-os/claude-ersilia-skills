@@ -1,7 +1,7 @@
 ---
 description: Summarise your Slack activity, surface unanswered messages, and identify what you need to respond to
 argument-hint: [--since <YYYY-MM-DD|Nd|Nw>] [--channels <ch1,ch2>] [--me <slack-username>]
-allowed-tools: [mcp__slack__slack_list_channels, mcp__slack__slack_get_channel_history, mcp__slack__slack_search_messages, mcp__slack__slack_get_thread_replies, mcp__slack__slack_get_users, AskUserQuestion]
+allowed-tools: [AskUserQuestion]
 ---
 
 # Slack Summaries
