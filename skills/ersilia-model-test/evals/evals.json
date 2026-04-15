@@ -1,0 +1,23 @@
+{
+  "skill_name": "ersilia-model-test",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "I have the model eos4ywv cloned at /home/marina/models/new_models/eos4ywv. Can you run the ersilia test on it and let me know if it passes?",
+      "expected_output": "Skill runs `ersilia test eos4ywv --shallow --from_dir /home/marina/models/new_models/eos4ywv` in the ersilia conda environment, reads the JSON report, correctly identifies that 'not present' fields (S3, DockerHub, etc.) are expected and non-critical, and reports the overall pass/fail status clearly to the user.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Please test this model before I submit it to the hub. It's eos26a4 and it's at /home/marina/models/new_models/eos26a4. Run the ersilia shallow test and fix anything that's failing.",
+      "expected_output": "Skill runs the test, reads the JSON report, identifies the failing checks (robustness_test, csv_csv, output consistency, rmse_mean), diagnoses the causes by reading main.py and other relevant files, applies fixes (e.g. adding random seeds for stochastic components, fixing output format issues), explains the fixes clearly to the user, and re-runs the test to verify improvement.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I'm working on eos96f4 at /home/marina/models/error_models/eos96f4. The model should predict molecular complexity. Can you test it with ersilia and debug whatever is wrong?",
+      "expected_output": "Skill runs the test in the ersilia conda environment, reads the output, identifies and categorizes all failures, reads the relevant code files (main.py, install.yml, run_columns.csv) to diagnose root causes, proposes and applies targeted fixes without touching run.sh or run_output.csv, explains each fix to the user with what failed and why, and re-runs the test.",
+      "files": []
+    }
+  ]
+}
