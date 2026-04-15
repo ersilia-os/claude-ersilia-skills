@@ -13,7 +13,6 @@ description: >
   main.py", "add checkpoints", "create run_columns", "create install.yml for ersilia",
   "generate example files for ersilia model", or any request to wire a source model
   into the eos-template format.
-argument-hint: --template <template-repo-path> --source <source-model-repo-path> [--paper <pdf-path>]
 allowed-tools: [Bash, Read, Write, Edit, Glob, Grep, WebFetch, AskUserQuestion]
 ---
 
@@ -138,10 +137,11 @@ name,type,direction,description
 
 Rules (details in `references/template-structure.md`):
 - **name**: lowercase, underscores only (no spaces, no hyphens). Generative outputs:
-  `smi_` + zero-padded index (padding width = digit count of total output count, e.g.
-  `smi_00` for 100 outputs, `smi_000` for 1000 outputs); representation/featurisation
-  outputs: `feat_` + zero-padded index using the same padding rule (e.g. `feat_000` for
-  512 dims, `feat_0000` for 2048 dims); single-value predictors: a meaningful name like
+  `smi_` + zero-padded index (padding width = digit count of the maximum index, i.e.
+  total count − 1; e.g. `smi_00` for 100 outputs since max index = 99 has 2 digits,
+  `smi_000` for 1000 outputs since max index = 999 has 3 digits); representation/featurisation
+  outputs: `feat_` + zero-padded index using the same padding rule (e.g. `feat_00` for
+  100 dims, `feat_000` for 512 dims, `feat_0000` for 2048 dims); single-value predictors: a meaningful name like
   `logp` or `activity_score`. Note: many older Ersilia models use `dim_` instead of
   `feat_` — that is historical; all new incorporations must use `feat_`.
 - **type**: `float`, `integer`, or `string` — nothing else.
@@ -256,11 +256,11 @@ To produce `run_output.csv`, actually run the model:
    conda activate eos-test
    ```
 2. Install all dependencies listed in `install.yml` in the order they appear.
-3. Run main.py against the three input SMILES:
+3. Run the model via `run.sh` (NOT by calling main.py directly) from the template repo root:
    ```bash
-   python model/framework/code/main.py \
-     -i model/framework/examples/run_input.csv \
-     -o /tmp/run_output.csv
+   bash model/framework/run.sh model/framework \
+     model/framework/examples/run_input.csv \
+     /tmp/run_output.csv
    ```
 4. Inspect the output — verify row count (3), column names match run_columns.csv,
    and values are in the expected range.
