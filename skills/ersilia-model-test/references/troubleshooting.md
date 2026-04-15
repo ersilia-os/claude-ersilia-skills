@@ -82,6 +82,7 @@ Checks for `metadata` or `metadata_compliance` fail.
   Output:
     - Value
   ```
+- **Description too long**: The `Description` field must be 600 characters or fewer. If `model_description` fails, check the length first — trim the text to fit without losing the key information.
 - **Missing required fields**: The test checks for presence of fields like `Task`, `Subtask`, `Output`, `Output Dimension`, `Output Consistency`. If any are blank or placeholder text ("Biomedical Area 1"), fill them in.
 - **"not present" fields**: Fields like `S3`, `DockerHub`, `Model Size`, `Incorporation Date` are auto-populated after merge. These showing "not present" is normal — do not try to fill them.
 

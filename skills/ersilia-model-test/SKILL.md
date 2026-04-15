@@ -1,11 +1,11 @@
 ---
 name: ersilia-model-test
-description: Tests and debugs an Ersilia Model Hub model before hub incorporation. Runs `ersilia test --shallow` on a locally cloned model repository, identifies failing checks, diagnoses and fixes issues in the model code, explains what was wrong and what was fixed to the user, then re-runs the test. Loops until all non-trivial checks pass. Use this skill whenever a user wants to test, validate, or debug an Ersilia model before submitting it to the hub, mentions test failures, says "the test is failing", or is preparing a model for hub incorporation. Trigger even if the user just says "test the model" or "run ersilia test" in any Ersilia context.
+description: Tests an Ersilia Model Hub model before hub incorporation. Runs `ersilia test --shallow` on a locally cloned model repository, reads the results, identifies failing checks, and proposes a debugging strategy to the user — but does not apply fixes automatically. Use this skill whenever a user wants to test, validate, or debug an Ersilia model before submitting it to the hub, mentions test failures, says "the test is failing", or is preparing a model for hub incorporation. Trigger even if the user just says "test the model" or "run ersilia test" in any Ersilia context.
 ---
 
-# Ersilia Model Tester and Debugger
+# Ersilia Model Tester
 
-Your job is to run the Ersilia shallow test on a locally cloned model, identify and fix any failures, explain what you did, and re-run until the model passes. Do this automatically — don't wait for the user to ask you to fix things.
+Your job is to run the Ersilia shallow test on a locally cloned model, read the results, and tell the user what is failing and how to fix it. You propose fixes — you do not apply them unless the user explicitly asks you to.
 
 ## What you receive
 
@@ -14,54 +14,68 @@ Your job is to run the Ersilia shallow test on a locally cloned model, identify 
 
 If either is missing, ask the user before proceeding.
 
-## Step 1: Run the shallow test
+## Step 1: Run the shallow test (once)
 
-Always run the test inside the `ersilia` conda environment. Navigate to the model directory first so the JSON report lands there:
+Always run inside the `ersilia` conda environment, from the model directory:
 
 ```bash
 cd <model_path>
 conda run -n ersilia ersilia test <model_id> --shallow --from_dir <model_path>
 ```
 
-This produces a JSON report `<model_id>-test.json` in the current directory and prints a PASSED/FAILED table to the terminal. Capture both.
+This produces a JSON report `<model_id>-test.json` in the current directory. Capture the terminal output too — it often contains error tracebacks that explain why a check failed.
 
-**If the test exits early** (the simple run failed), that's the highest-priority failure — fix it first before re-running. Early exit means subsequent checks couldn't run at all.
+**Important:** Never delete, remove, or modify any directories or folders. Never touch `run.sh`. Never touch `run_output.csv`.
 
 ## Step 2: Read and triage the results
 
 Read `<model_id>-test.json`. It contains boolean results for each check.
 
-**Ignore (not critical for pre-incorporation models):**
-- Any check that reports "not present" — these are fields auto-populated after merge (S3 URL, DockerHub URL, model size, incorporation date, etc.)
-- Missing contributor and incorporation metadata
+**Ignore — these are auto-populated after hub merge and not your concern:**
+- Any check with value `"not present"` (S3 URL, DockerHub, model size, incorporation date, computational performance, release version, etc.)
 
-**Fix everything else that is FAILED.** Common failure categories and what to do about each are in `references/troubleshooting.md`.
+**Focus on everything that is `false`.** Group them:
 
-If all non-trivial checks pass, tell the user the model is ready and summarize what you found. You're done.
+1. **Run failure** (`simple_model_run: false`) — the model crashes on execution. This is the most critical. All other checks below it will also be false as a side effect — focus on fixing the run first.
+2. **Metadata failures** — fields like `model_description`, `model_task`, etc.
+3. **File structure failures** — columns format, install.yml syntax, etc.
+4. **Consistency failures** — output varies between runs, or differs between Ersilia CLI and direct bash execution.
 
-## Step 3: Diagnose and fix failures
+## Step 3: Diagnose each failure
 
-For each FAILED check:
+For each failing check, **read the relevant files** to understand the root cause. Do not guess — look at the actual code and config. Relevant files to read:
 
-1. **Read the relevant files** before changing anything. Understand what the file is doing and why it might be failing.
-2. **Fix the problem** in the model code.
-3. **Explain clearly** to the user: what failed, why, and what you changed.
+| Failing check | Files to read |
+|---------------|--------------|
+| `simple_model_run` | `model/framework/code/main.py`, terminal error output |
+| `model_description` | `metadata.yml` (check Description field length — max 600 characters) |
+| `metadata_*` | `metadata.yml` |
+| `columns` / `metadata_dim_and_run_column_file_dim_check` | `model/framework/columns/run_columns.csv`, `metadata.yml` |
+| `install_yaml_check` | `install.yml` |
+| `check_consistency_of_model_output` / `rmse_mean` | `model/framework/code/main.py` (look for random seeds, stochastic operations) |
 
-### What you may touch
+See `references/troubleshooting.md` for specific causes and fixes for each check type.
 
-| File | OK to modify |
-|------|-------------|
-| `model/framework/code/main.py` (and other Python files in `code/`) | Yes |
-| `model/framework/columns/run_columns.csv` | Yes |
-| `model/framework/examples/run_input.csv` | Yes |
-| `install.yml` | Yes |
-| `metadata.yml` | Yes (only the fields that are failing) |
-| `model/framework/examples/run_output.csv` | **No** — this file defines the expected output used for consistency checks. Changing it would mask real problems rather than fix them. Only modify it if the user explicitly asks you to. |
-| `model/framework/run.sh` | **Never** — do not touch this file under any circumstances. |
+## Step 4: Present findings and proposed fixes to the user
 
-If a problem appears to require changes to `run.sh`, look for an alternative fix — the issue is almost always in `main.py`, `install.yml`, or how inputs/outputs are handled.
+After diagnosing, give the user a clear summary structured like this:
 
-### Model template structure (for reference)
+---
+
+**Test result: X checks failing** (ignoring "not present" fields)
+
+For each failing check:
+- **What failed**: name of the check
+- **Why**: one-sentence root cause based on what you read in the code
+- **Proposed fix**: exactly what to change and in which file
+
+Then ask: *"Would you like me to apply these fixes?"*
+
+---
+
+Only apply fixes if the user says yes. If the user asks you to apply, make the changes and then re-run the test to confirm.
+
+## Model template structure (for reference)
 
 ```
 <model_id>/
@@ -69,35 +83,13 @@ If a problem appears to require changes to `run.sh`, look for an alternative fix
 │   ├── framework/
 │   │   ├── run.sh              ← NEVER modify
 │   │   ├── code/
-│   │   │   └── main.py         ← primary model logic
+│   │   │   └── main.py
 │   │   ├── examples/
-│   │   │   ├── run_input.csv   ← 3 example SMILES
-│   │   │   └── run_output.csv  ← expected output (do not modify)
+│   │   │   ├── run_input.csv
+│   │   │   └── run_output.csv  ← NEVER modify
 │   │   └── columns/
-│   │       └── run_columns.csv ← output column metadata
-│   └── checkpoints/            ← model weights (don't modify)
+│   │       └── run_columns.csv
+│   └── checkpoints/            ← do not modify
 ├── metadata.yml
 └── install.yml
 ```
-
-See `references/troubleshooting.md` for specific failure types and how to fix them.
-
-## Step 4: Re-run and repeat
-
-After applying fixes, run the test again from scratch:
-
-```bash
-cd <model_path>
-conda run -n ersilia ersilia test <model_id> --shallow --from_dir <model_path>
-```
-
-Repeat the triage-fix-rerun loop until all non-trivial checks pass. If after 3 iterations the same check keeps failing and you're not sure why, stop and describe the failure in detail to the user — include the exact error message and what you've already tried.
-
-## How to explain fixes to the user
-
-After each fix cycle, give a brief, clear summary:
-- What check failed
-- What the root cause was (one sentence)
-- What you changed and in which file
-
-Keep it readable for someone who knows the model but may not know the internals of the testing framework.
