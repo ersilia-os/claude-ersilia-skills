@@ -1,0 +1,21 @@
+{
+  "skill_name": "ersilia-metadata",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Please fill in the metadata.yml for an Ersilia model. Here are the inputs:\n- Partial metadata.yml: /home/marina/ersilia/claude-ersilia-skills/skills/ersilia-metadata-workspace/inputs/eos4ywv_template.yml\n- Paper PDF: https://pubs.acs.org/doi/pdf/10.1021/acs.jcim.2c00229?ref=article_openPDF\n- Source code repository: https://github.com/LBLQMM/MACAW/\n\nFill in the required fields and save the completed metadata.yml to the outputs directory.",
+      "expected_output": "A completed metadata.yml with: Deployment=[Local], Source=Local, Source Type=External, Task=Representation, Subtask=Featurization, Output=[Value], Output Dimension=100, Output Consistency=Fixed, Interpretation describing a 100-feature molecular embedding, Biomedical Area=[Any], Target Organism=[Any], Publication Type=Peer reviewed, Publication Year=2022 or 2023 (based on actual paper date).",
+      "files": [
+        "/home/marina/ersilia/claude-ersilia-skills/skills/ersilia-metadata-workspace/inputs/eos4ywv_template.yml"
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "Please fill in the metadata.yml for an Ersilia model. Here are the inputs:\n- Partial metadata.yml: /home/marina/ersilia/claude-ersilia-skills/skills/ersilia-metadata-workspace/inputs/eos60mw_template.yml\n- Paper: https://link.springer.com/article/10.1186/s13321-024-00929-7\n- Source code repository: https://github.com/Harigua/CidalsDB/tree/main\n\nFill in the required fields and save the completed metadata.yml to the outputs directory.",
+      "expected_output": "A completed metadata.yml with: Deployment=[Local], Source=Local, Source Type=External, Task=Annotation, Subtask=Activity prediction, Output=[Score], Output Dimension=6, Output Consistency=Fixed, Interpretation about anti-Leishmania/anti-coronavirus activity probability, Biomedical Area containing COVID-19 and/or Leishmaniasis, Target Organism containing Leishmania major and SARS-CoV-2, Publication Type=Peer reviewed, Publication Year=2024.",
+      "files": [
+        "/home/marina/ersilia/claude-ersilia-skills/skills/ersilia-metadata-workspace/inputs/eos60mw_template.yml"
+      ]
+    }
+  ]
+}
