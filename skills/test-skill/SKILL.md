@@ -38,4 +38,4 @@ If the output shows a symlink (`->`) pointing to the cloned repo path, tell the 
 **Step 3 — Done**
 
 Tell the user:
-> "Skill setup verified. You can now delete or ignore this test-skill folder."
+> "Skill setup verified! You can now delete or ignore this test-skill folder."
