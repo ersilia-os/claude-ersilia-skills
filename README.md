@@ -98,13 +98,27 @@ The `references/` folder holds supporting files that the skill reads using the `
 
 ## Installation
 
-Add this plugin to your Claude Code configuration (`~/.claude/settings.json` or the project-level equivalent):
+### Local setup (recommended for contributors)
+
+After cloning the repo, run once:
+
+```bash
+bash setup.sh
+```
+
+This creates a symlink in `~/.claude/skills/` for each skill folder, so skills are immediately available as slash commands in Claude Code. Any personal skills you already have there are left untouched. A `post-merge` git hook is also installed, so whenever you `git pull` and new skills are added, they are linked automatically — no manual re-run needed.
+
+### Remote plugin (read-only access)
+
+If you only need to use the skills without a local clone, add this to your Claude Code configuration (`~/.claude/settings.json`):
 
 ```json
 {
-  "plugins": ["https://github.com/ersilia-os/claude-ersilia-skills"]
+  "plugins": ["https://github.com/ersilia-os/ersilia-skills"]
 }
 ```
+
+### Using skills
 
 Once installed, skills are available as slash commands in any Claude Code session. For example:
 

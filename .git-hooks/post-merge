@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+echo "[ersilia-skills] Syncing new skills into ~/.claude/skills/ ..."
+"$(git rev-parse --show-toplevel)/setup.sh"
