@@ -1,0 +1,149 @@
+{
+  "skill_name": "stylia-plotting",
+  "evals": [
+    {
+      "id": 0,
+      "prompt": "Make a scatter plot of x vs y where x = np.linspace(0, 10, 100) and y = np.sin(x) + np.random.normal(0, 0.1, 100). Color the points by their y value.",
+      "expected_output": "Python script using stylia.create_figure(), ax = axs.next(), FadingColormap for continuous color encoding, stylia.label() for axis labels, stylia.save_figure(). Defaults to slide + ersilia. No plt.figure(), no hardcoded sizes.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "no-plt-figure",
+          "text": "The script does not use plt.figure(), plt.subplots(), or any raw matplotlib figure constructor"
+        },
+        {
+          "id": "uses-create-figure",
+          "text": "The script uses stylia.create_figure() to create the figure"
+        },
+        {
+          "id": "uses-axs-next",
+          "text": "The script uses axs.next() to retrieve the axis"
+        },
+        {
+          "id": "uses-colormap-not-named",
+          "text": "The script uses a continuous colormap (FadingColormap or similar) to color points by value, not a single named color"
+        },
+        {
+          "id": "uses-stylia-label",
+          "text": "The script uses stylia.label() for axis labels/title, not ax.set_xlabel() or ax.set_ylabel()"
+        },
+        {
+          "id": "uses-save-figure",
+          "text": "The script uses stylia.save_figure() and not plt.savefig() or plt.show()"
+        },
+        {
+          "id": "default-slide-ersilia",
+          "text": "The script sets format to 'slide' and style to 'ersilia' (the defaults)"
+        },
+        {
+          "id": "no-hardcoded-sizes",
+          "text": "The script does not pass hardcoded values for s=, linewidth=, or fontsize= parameters"
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "prompt": "I have a bar chart comparing model performance across 12 different datasets. The metric is AUROC and I want to plot all 12 bars with different colors.",
+      "expected_output": "Python script using stylia.create_figure(), CyclicColormap (more bars than palette size), stylia.label(), stylia.save_figure(). No named colors (12 > 8 ersilia palette). Defaults to slide + ersilia.",
+      "files": [],
+      "assertions": [
+        {
+          "id": "no-plt-figure",
+          "text": "The script does not use plt.figure(), plt.subplots(), or any raw matplotlib figure constructor"
+        },
+        {
+          "id": "uses-create-figure",
+          "text": "The script uses stylia.create_figure() to create the figure"
+        },
+        {
+          "id": "uses-cyclic-colormap",
+          "text": "The script uses CyclicColormap (not named colors or CategoricalPalette) because 12 bars exceeds the palette size"
+        },
+        {
+          "id": "uses-stylia-label",
+          "text": "The script uses stylia.label() for axis labels/title"
+        },
+        {
+          "id": "uses-save-figure",
+          "text": "The script uses stylia.save_figure() and not plt.savefig() or plt.show()"
+        },
+        {
+          "id": "no-hardcoded-sizes",
+          "text": "The script does not pass hardcoded values for s=, linewidth=, or fontsize= parameters"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "I want to plot ROC curves for a classifier evaluated across 5 cross-validation folds, plus the mean ROC curve. This is for a paper.",
+      "expected_output": "Python script using stylia.create_figure(), lighten pattern (individual folds lightened, mean in full color), print + article style inferred from 'paper', stylia.label(), stylia.save_figure().",
+      "files": [],
+      "assertions": [
+        {
+          "id": "no-plt-figure",
+          "text": "The script does not use plt.figure(), plt.subplots(), or any raw matplotlib figure constructor"
+        },
+        {
+          "id": "uses-create-figure",
+          "text": "The script uses stylia.create_figure() to create the figure"
+        },
+        {
+          "id": "infers-print-article",
+          "text": "The script sets format to 'print' and style to 'article', inferred from 'paper' context"
+        },
+        {
+          "id": "uses-lighten-pattern",
+          "text": "Individual fold curves use nc.get(..., lighten=...) and the mean curve uses the full (non-lightened) color"
+        },
+        {
+          "id": "uses-stylia-label",
+          "text": "The script uses stylia.label() for axis labels/title"
+        },
+        {
+          "id": "uses-save-figure",
+          "text": "The script uses stylia.save_figure() and not plt.savefig() or plt.show()"
+        },
+        {
+          "id": "no-hardcoded-sizes",
+          "text": "The script does not pass hardcoded values for s=, linewidth=, or fontsize= parameters"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "Plot a 2x2 grid of figures: a line plot, a scatter, a histogram and a boxplot, each with some random data.",
+      "expected_output": "Python script using stylia.create_figure(2, 2), four axs.next() calls, helper functions each accepting ax as argument, stylia.label() with abc letters A-D, stylia.save_figure(). No plt.subplots().",
+      "files": [],
+      "assertions": [
+        {
+          "id": "no-plt-figure",
+          "text": "The script does not use plt.figure(), plt.subplots(), or any raw matplotlib figure constructor"
+        },
+        {
+          "id": "uses-create-figure-2x2",
+          "text": "The script uses stylia.create_figure(2, 2) for a 2x2 grid"
+        },
+        {
+          "id": "four-axs-next-calls",
+          "text": "The script calls axs.next() exactly four times, once per subplot"
+        },
+        {
+          "id": "helper-functions-accept-ax",
+          "text": "Helper functions for individual plot types accept ax as an argument rather than creating their own figure"
+        },
+        {
+          "id": "uses-stylia-label-with-abc",
+          "text": "stylia.label() is used for all panels and includes abc= panel letters (A, B, C, D)"
+        },
+        {
+          "id": "uses-save-figure",
+          "text": "The script uses stylia.save_figure() and not plt.savefig() or plt.show()"
+        },
+        {
+          "id": "no-hardcoded-sizes",
+          "text": "The script does not pass hardcoded values for s=, linewidth=, or fontsize= parameters"
+        }
+      ]
+    }
+  ]
+}
