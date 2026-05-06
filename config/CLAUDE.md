@@ -66,11 +66,11 @@ Follow Ersilia's brand guidelines.
 
 Python is the main programming language.
 
-- Formatting and linting: `black` and `ruff`.
-- Type hints: encouraged in public functions.
-- Docstrings: NumPy style. Include a brief one-line summary, extended description if needed, Parameters, Returns, and Raises sections.
-- Comments: explain *why*, not what. Keep code self-documenting via clear names.
-- Dependencies: minimize external packages; justify additions. 
+- **Formatting and linting:** `black` and `ruff`.
+- **Type hints:** encouraged in public functions.
+- **Docstrings:** NumPy style. Include a brief one-line summary, extended description if needed, Parameters, Returns, and Raises sections.
+- **Comments:** explain *why*, not what. Keep code self-documenting via clear names.
+- **Dependencies:** minimize external packages; justify additions. 
 
 ## Internal resources
 
@@ -80,27 +80,27 @@ Organisational documents are kept in Google Drive. Not all folders are accessibl
 
 The most used shared drives are the following:
 
-- Content: social media posts, scientific articles, brand assets, photos, etc.
-- Grants: all submitted grants, grouped by year. Always consult previously submitted grants in search for narrative, content, and tone.
-- Human Resources: employee information, interns, volunteers, job descriptions, travel documents, recommendation letters.
-- Legal: legal documents for the Spanish (current) and British (past) organisations. Contracts, finances, agreements, etc. Treat this confidentially.
-- Presentations: slide decks for scientific and outreach presentations.
-- Projects: current and past projects, standalone or in collaboration.
+- **Content:** social media posts, scientific articles, brand assets, photos, etc.
+- **Grants:** all submitted grants, grouped by year. Always consult previously submitted grants in search for narrative, content, and tone.
+- **Human Resources:** employee information, interns, volunteers, job descriptions, travel documents, recommendation letters.
+- **Legal:** legal documents for the Spanish (current) and British (past) organisations. Contracts, finances, agreements, etc. Treat this confidentially.
+- **Presentations:** slide decks for scientific and outreach presentations.
+- **Projects:** current and past projects, standalone or in collaboration.
 
 Other shared drives include:
 
-- Fundraising: documentation for philanthropic fundraising efforts
-- GitHub: backups of heavy (and private) repositories; not relevant.
-- Meetings and Notes: external and internal meeting notes; project tracking documents.
-- Platform: technology roadmap documents, hardware available, etc.
-- Trainings: documentation related to trainings and capacity building; surveys, shared folders with participants, etc.
+- **Fundraising:** documentation for philanthropic fundraising efforts
+- **GitHub:** backups of heavy (and private) repositories; not relevant.
+- **Meetings and Notes:** external and internal meeting notes; project tracking documents.
+- **Platform:** technology roadmap documents, hardware available, etc.
+- **Trainings:** documentation related to trainings and capacity building; surveys, shared folders with participants, etc.
 
 ### Airtable
 
 Access to Airtable is restricted to some members. There are two main bases:
 
-- Ersilia Content: registry of partner organisations, contacts, grants, donations, publications, projects, etc. Useful to collect organisational statistics.
-- Ersilia Model Hub: model metadata in a tabular form. This mirrors the metadata available in model repositories.
+- **Ersilia Content:** registry of partner organisations, contacts, grants, donations, publications, projects, etc. Useful to collect organisational statistics.
+- **Ersilia Model Hub:** model metadata in a tabular form. This mirrors the metadata available in model repositories.
 
 ## External resources
 
@@ -108,9 +108,9 @@ Access to Airtable is restricted to some members. There are two main bases:
 
 Most documentation resides in the Ersilia Book, hosted in GitBook. The Ersilia Book should be kept up to date.
 
-- Browse the Ersilia Book: https://ersilia.gitbook.io
-- Edit content directly in GitHub: https://github.com/ersilia-os/ersilia-book
-- Another useful GitBook site is related to capacity building workshops: https://ersilia.gitbook.io/ersilia-workshops
+- **Browse the Ersilia Book:** https://ersilia.gitbook.io
+- **Edit content directly in GitHub:** https://github.com/ersilia-os/ersilia-book
+- Another useful GitBook site is related to **capacity building workshops:** https://ersilia.gitbook.io/ersilia-workshops
 
 At a high level, the Ersilia Book contains:
 
@@ -155,9 +155,9 @@ Code is stored in GitHub (organisation: `ersilia-os`).
 
 The main types of repositories are:
 
-- Analysis: related to articles and data science studies; they include notebooks, plots, and deliverable results. These repositories grow sequentially as research progresses. Recommended template: `eos-analysis-template`.
-- Tools: often a Python package aimed at being used in several scenarios; often they include a CLI and/or an API. Dependencies are accurately specified and versioned. Recommended template: `eos-python-package`.
-- Models: Ersilia Model Hub assets, identified with an `eos[1-9][a-z0-9]{3}` code (i.e. an `eos` prefix, one digit and three alphanumeric characters). Template: `eos-template`.
+- **Analysis:** related to articles and data science studies; they include notebooks, plots, and deliverable results. These repositories grow sequentially as research progresses. Recommended template: `eos-analysis-template`.
+- **Tools:** often a Python package aimed at being used in several scenarios; often they include a CLI and/or an API. Dependencies are accurately specified and versioned. Recommended template: `eos-python-package`.
+- **Models:** Ersilia Model Hub assets, identified with an `eos[1-9][a-z0-9]{3}` code (i.e. an `eos` prefix, one digit and three alphanumeric characters). Template: `eos-template`.
 
 Other types of repositories include apps, workshops, and documentation.
 
@@ -173,8 +173,8 @@ The Ersilia Model Hub is the organisation's central project. Always consider how
 
 Two GUIs exist for non-experts. Do **not** use them unless strictly necessary. They are not intended for programmatic access.
 
-- Ersilia catalog: https://catalog.ersilia.io; a browser to the catalog of models.
-- Ersilia GUI: https://hub.ersilia.io; a submission portal containing a curated subset of models, mainly used in workshops.
+- **Ersilia catalog:** https://catalog.ersilia.io; a browser to the catalog of models.
+- **Ersilia GUI:** https://hub.ersilia.io; a submission portal containing a curated subset of models, mainly used in workshops.
 
 ### GitHub best practices
 
