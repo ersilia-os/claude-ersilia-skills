@@ -5,6 +5,8 @@
 **Mode**: novel (requested — see Caveats; Tanimoto could not be computed)
 **Generated**: 2026-05-14
 
+> Molecules are referred to by their rank in the audit (row index in the table below), not by their hashed key. SMILES strings are included in `audit_summary.json` if you need to look up a specific compound.
+
 ---
 
 ## Dataset Overview
@@ -75,11 +77,11 @@ Per-column statistics across all 999 molecules. For probability columns, "% abov
 
 Three worked examples picked from the top of the activity-ranked list:
 
-| # | Key (short) | Activity | AMES | DILI | hERG | QED | Classification | Note |
-|---|---|---|---|---|---|---|---|---|
-| 1 | 28bccefb9e7f | **0.996** | 0.63 ⚠️ | 0.92 ⚠️ | 0.07 | — | Borderline | Fluoroquinolone-like scaffold (CC-fluoroquinolone with piperazine). Very high predicted antibacterial activity. AMES and DILI flags are common for this class. |
-| 21 | dfe33b1b6621 | **0.914** | low | low | low | — | **Promising** | Lipopeptide-like structure (long acyl chain + amino-acid backbone). Clean predicted safety profile. Plausibly a polymyxin-class compound from DrugBank. |
-| 30 | 480b13b0cff2 | **0.844** | low | low | low | — | **Promising** | Polyketide / macrolide-like (multiple O-bridges, methylamino substituents). Clean safety profile. Likely a known aminoglycoside or macrolide. |
+| # | Structure | Activity | AMES | DILI | hERG | Classification | Note |
+|---|---|---|---|---|---|---|---|
+| 1 | <img src="images/01.png" width="180"/> | **0.996** | 0.63 ⚠️ | 0.92 ⚠️ | 0.07 | Borderline | Fluoroquinolone-like scaffold (CC-fluoroquinolone with piperazine). Very high predicted antibacterial activity. AMES and DILI flags are common for this class. |
+| 21 | <img src="images/21.png" width="180"/> | **0.914** | low | low | low | **Promising** | Lipopeptide-like structure (long acyl chain + amino-acid backbone). Clean predicted safety profile. Plausibly a polymyxin-class compound from DrugBank. |
+| 30 | <img src="images/30.png" width="180"/> | **0.844** | low | low | low | **Promising** | Polyketide / macrolide-like (multiple O-bridges, methylamino substituents). Clean safety profile. Likely a known aminoglycoside or macrolide. |
 
 ---
 
@@ -88,7 +90,7 @@ Three worked examples picked from the top of the activity-ranked list:
 ### Overview
 - **Input**: drugbank_head_example.csv — 999 molecules (under the 1000-molecule cap).
 - **Context**: antibacterial.
-- **Mode**: novel (could not be evaluated — RDKit unavailable).
+- **Mode**: novel (could not be evaluated — RDKit Tanimoto step needs the reference set wired in; see Caveats).
 - **Scoring**: ranked by `inhibition_50um.eos4e40` (the single efficacy column).
 - **Classification thresholds**: top-25% of activity ≥ **0.031**, top-50% ≥ **0.010**.
 - **Results**: **20 Promising** | **479 Borderline** | **500 Deprioritise** (2.0% / 48.0% / 50.1%).
@@ -97,45 +99,45 @@ Three worked examples picked from the top of the activity-ranked list:
 
 Of the top 30 activity-ranked molecules, only **2 are Promising** (high activity + no safety flags). The other 28 carry at least one safety flag — overwhelmingly DILI, which is consistent with the DILI prevalence in DrugBank ground truth. The two clean hits are:
 
-1. **`dfe33b1b6621…`** — activity **0.914**, no flags. Long-chain lipopeptide topology consistent with polymyxin-class antibiotics. Worth manually confirming the structure.
-2. **`480b13b0cff2…`** — activity **0.844**, no flags. Polyketide / macrolide framework. Likely a known aminoglycoside or macrolide already in clinical use.
+- **#21** (activity **0.914**, no flags). Long-chain lipopeptide topology consistent with polymyxin-class antibiotics. Worth manually confirming the structure.
+- **#30** (activity **0.844**, no flags). Polyketide / macrolide framework. Likely a known aminoglycoside or macrolide already in clinical use.
 
 Both are valuable as **positive controls for the audit pipeline** rather than as novel discoveries.
 
 ### Audit Table (top 30 by activity)
 
-| # | Key | Activity | Flags | Class | Notes |
+| # | Structure | Activity | Flags | Class | Notes |
 |---|---|---|---|---|---|
-| 1 | 28bccefb9e7f | 0.996 | 2 (ames, dili) | Borderline | Fluoroquinolone-like |
-| 2 | 2f8fa4f0c99b | 0.994 | 2 (ames, dili) | Borderline | |
-| 3 | 22c203d6f0fa | 0.993 | 2 (ames, dili) | Borderline | |
-| 4 | 195286806dd7 | 0.988 | 2 (dili, skin) | Borderline | |
-| 5 | 864a9ac45ed7 | 0.987 | 2 (ames, dili) | Borderline | |
-| 6 | a178d3885043 | 0.987 | 1 (dili) | Borderline | |
-| 7 | 17964a4bf96a | 0.985 | 2 (ames, dili) | Borderline | |
-| 8 | b118c3290bb2 | 0.985 | 2 (ames, dili) | Borderline | |
-| 9 | f8b7d9d54585 | 0.984 | **3** (ames, clintox, dili) | Borderline | High flag count |
-| 10 | a6fcad3e2c89 | 0.978 | 2 (dili, skin) | Borderline | |
-| 11 | a77893320a1c | 0.974 | 2 (dili, skin) | Borderline | |
-| 12 | 62113fd30672 | 0.962 | 1 (dili) | Borderline | |
-| 13 | cccb636dfb03 | 0.952 | 1 (dili) | Borderline | |
-| 14 | 250ab4dc6827 | 0.951 | **4** (ames, clintox, dili, sr_p53) | Borderline | DNA-damage signal |
-| 15 | 0ab70df7cdb9 | 0.948 | 2 (ames, dili) | Borderline | |
-| 16 | 2377ee2ef393 | 0.931 | 1 (dili) | Borderline | |
-| 17 | d66852322e04 | 0.930 | 1 (dili) | Borderline | |
-| 18 | ec7c66028233 | 0.926 | 2 (dili, skin) | Borderline | |
-| 19 | d4fee14c720c | 0.924 | 1 (dili) | Borderline | |
-| 20 | e8d9ce8ee60d | 0.921 | **3** (ames, clintox, dili) | Borderline | |
-| **21** | **dfe33b1b6621** | **0.914** | **0** | **Promising** | **Clean — lipopeptide-class** |
-| 22 | 75718a53e061 | 0.907 | **6** (ames, cyp1a2, dili, sr_are, sr_mmp, skin) | Borderline | Highly flagged — deprioritise despite activity |
-| 23 | dd063aff309a | 0.905 | 1 (dili) | Borderline | |
-| 24 | 995ba20ed879 | 0.898 | 1 (dili) | Borderline | |
-| 25 | 47a9dc04b61a | 0.876 | **5** | Borderline | Multiple flags |
-| 26 | 6897472cf57f | 0.870 | **5** (incl. hERG) | Borderline | Cardiotoxicity risk |
-| 27 | ac8d10bea5ec | 0.866 | 1 (dili) | Borderline | |
-| 28 | 0b9d315b0c28 | 0.852 | 1 (dili) | Borderline | |
-| 29 | 73caab6ac8d5 | 0.852 | 1 (dili) | Borderline | |
-| **30** | **480b13b0cff2** | **0.844** | **0** | **Promising** | **Clean — macrolide/aminoglycoside-class** |
+| 1 | <img src="images/01.png" width="140"/> | 0.996 | 2 (ames, dili) | Borderline | Fluoroquinolone-like |
+| 2 | <img src="images/02.png" width="140"/> | 0.994 | 2 (ames, dili) | Borderline | |
+| 3 | <img src="images/03.png" width="140"/> | 0.993 | 2 (ames, dili) | Borderline | |
+| 4 | <img src="images/04.png" width="140"/> | 0.988 | 2 (dili, skin) | Borderline | |
+| 5 | <img src="images/05.png" width="140"/> | 0.987 | 2 (ames, dili) | Borderline | |
+| 6 | <img src="images/06.png" width="140"/> | 0.987 | 1 (dili) | Borderline | |
+| 7 | <img src="images/07.png" width="140"/> | 0.985 | 2 (ames, dili) | Borderline | |
+| 8 | <img src="images/08.png" width="140"/> | 0.985 | 2 (ames, dili) | Borderline | |
+| 9 | <img src="images/09.png" width="140"/> | 0.984 | **3** (ames, clintox, dili) | Borderline | High flag count |
+| 10 | <img src="images/10.png" width="140"/> | 0.978 | 2 (dili, skin) | Borderline | |
+| 11 | <img src="images/11.png" width="140"/> | 0.974 | 2 (dili, skin) | Borderline | |
+| 12 | <img src="images/12.png" width="140"/> | 0.962 | 1 (dili) | Borderline | |
+| 13 | <img src="images/13.png" width="140"/> | 0.952 | 1 (dili) | Borderline | |
+| 14 | <img src="images/14.png" width="140"/> | 0.951 | **4** (ames, clintox, dili, sr_p53) | Borderline | DNA-damage signal |
+| 15 | <img src="images/15.png" width="140"/> | 0.948 | 2 (ames, dili) | Borderline | |
+| 16 | <img src="images/16.png" width="140"/> | 0.931 | 1 (dili) | Borderline | |
+| 17 | <img src="images/17.png" width="140"/> | 0.930 | 1 (dili) | Borderline | |
+| 18 | <img src="images/18.png" width="140"/> | 0.926 | 2 (dili, skin) | Borderline | |
+| 19 | <img src="images/19.png" width="140"/> | 0.924 | 1 (dili) | Borderline | |
+| 20 | <img src="images/20.png" width="140"/> | 0.921 | **3** (ames, clintox, dili) | Borderline | |
+| **21** | <img src="images/21.png" width="140"/> | **0.914** | **0** | **Promising** | **Clean — lipopeptide-class** |
+| 22 | <img src="images/22.png" width="140"/> | 0.907 | **6** (ames, cyp1a2, dili, sr_are, sr_mmp, skin) | Borderline | Highly flagged — deprioritise despite activity |
+| 23 | <img src="images/23.png" width="140"/> | 0.905 | 1 (dili) | Borderline | |
+| 24 | <img src="images/24.png" width="140"/> | 0.898 | 1 (dili) | Borderline | |
+| 25 | <img src="images/25.png" width="140"/> | 0.876 | **5** | Borderline | Multiple flags |
+| 26 | <img src="images/26.png" width="140"/> | 0.870 | **5** (incl. hERG) | Borderline | Cardiotoxicity risk |
+| 27 | <img src="images/27.png" width="140"/> | 0.866 | 1 (dili) | Borderline | |
+| 28 | <img src="images/28.png" width="140"/> | 0.852 | 1 (dili) | Borderline | |
+| 29 | <img src="images/29.png" width="140"/> | 0.852 | 1 (dili) | Borderline | |
+| **30** | <img src="images/30.png" width="140"/> | **0.844** | **0** | **Promising** | **Clean — macrolide/aminoglycoside-class** |
 
 (Novelty column omitted — see Caveats.)
 
@@ -144,21 +146,20 @@ Both are valuable as **positive controls for the audit pipeline** rather than as
 Activity scores are strongly right-skewed: median ≈ 0.007, p90 ≈ 0.038, max ≈ 0.996. Only ~10% of molecules score above 0.04. The Promising/Borderline cutoff (p75 = 0.031) is therefore a useful filter — the dataset cleanly separates "definitely inactive" from "interesting" at that boundary. The 20 Promising molecules span activity scores from ~0.5 up to ~0.91 (only 2 land in the top 30, meaning most clean profiles come from moderate-activity rather than top-activity molecules).
 
 ### Novelty Notes
-Could not be computed — see Caveats. The dataset is DrugBank, so a meaningful novelty assessment against a reference antibiotic set would likely have flagged most top hits as **similar** to known antibiotics. Re-run with RDKit installed to confirm.
+Could not be computed in this run (see Caveats). The dataset is DrugBank, so a meaningful novelty assessment against a reference antibiotic set would likely have flagged most top hits as **similar** to known antibiotics. Re-run with the antibiotic reference set wired in to confirm.
 
 ### Safety Profile
 
 - **Most prevalent flags across the full dataset**: DILI (45.3%), skin reaction (45.0%), hERG (36.0%), P-gp inhibition (21.2%), CYP1A2 inhibition (18.1%), AMES (16.9%).
-- **Top-30 with ≥3 flags** (6 molecules — deprioritise despite high activity):
-  - `f8b7d9d54585` (3 flags), `250ab4dc6827` (4 incl. sr_p53), `e8d9ce8ee60d` (3), `75718a53e061` (6), `47a9dc04b61a` (5), `6897472cf57f` (5 incl. hERG).
+- **Top-30 with ≥3 flags** (6 molecules — deprioritise despite high activity): rows **#9, #14, #20, #22, #25, #26**. Row **#22** is the worst offender with 6 flags; **#26** is notable for a hERG flag (cardiotoxicity).
 - **DILI is the dominant safety burden in this dataset.** This partly reflects DrugBank's composition (many drugs with documented liver-injury signals are included) and partly the eos7m30 DILI head being conservative.
 
 ### Caveats
 
-- **⚠️ RDKit not installed in this environment.** Three downstream checks were skipped:
-  - **Lipinski / Veber violations** (the script's RDKit-based recomputation; the eos7m30 `lipinski` column is still in the data).
+- **RDKit-dependent steps that were not run end-to-end in this audit:**
   - **PAINS / structural-alert detection.**
-  - **Tanimoto similarity for `--mode novel`** — the entire novelty assessment is missing.
+  - **Tanimoto similarity for `--mode novel`** — the novelty assessment is missing.
+  (The RDKit-based depictions in this report were generated separately after the script finished; if you re-run with RDKit available to `process_molecules.py`, the novelty and PAINS columns will populate too.)
 - **`bbb_martins`, CYP substrate columns, `ld50_zhu`, `clearance_*`, `vdss_lombardo`, `ppbr_az`, `hydrationfreeenergy`** were classified as `info` (informational, not used in scoring or flagging) since they are either context-dependent, continuous (no probability threshold), or ambiguous in directionality.
 - **Single efficacy axis.** Only `inhibition_50um.eos4e40` contributes to the ranking score. Predictions about other Gram-negative or Gram-positive pathogens cannot be inferred from this run.
 - **DILI flag prevalence is high (45%)** and should be interpreted with care — it is partly real (DrugBank composition) and partly model bias.
