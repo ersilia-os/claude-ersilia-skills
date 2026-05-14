@@ -1,5 +1,20 @@
 # Antibiotic Drug Discovery Criteria
 
+> **⚠ Deprecated.** This file has been split into pathogen-group-specific criteria documents and a shared anti-infective primer. Read those instead:
+>
+> - [shared-anti-infective-criteria.md](./shared-anti-infective-criteria.md) — cross-bucket concepts (Ro5/Veber/PAINS in anti-infective context, AMES caveats, TPP frameworks)
+> - [gram-negative-criteria.md](./gram-negative-criteria.md)
+> - [gram-positive-criteria.md](./gram-positive-criteria.md)
+> - [antimycobacterial-criteria.md](./antimycobacterial-criteria.md)
+> - [antimalarial-criteria.md](./antimalarial-criteria.md)
+> - [antikinetoplastid-criteria.md](./antikinetoplastid-criteria.md)
+> - [antihelminthic-criteria.md](./antihelminthic-criteria.md)
+> - [antifungal-criteria.md](./antifungal-criteria.md)
+>
+> This file is retained only until SKILL.md is updated (see the architectural plan) to stop referencing it. It will be deleted then.
+
+---
+
 Reference guide for antibiotic-specific molecule auditing. Use when `--context` involves antibiotics, antimicrobials, or bacterial pathogens, and/or when `--mode similar` or `--mode novel` is specified.
 
 ---

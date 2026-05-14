@@ -16,7 +16,11 @@ allowed-tools: [Read, Bash, Write, WebFetch, AskUserQuestion]
 
 You audit a list of small molecules from an Ersilia screening run and produce a prioritised report. Your value is connecting raw model scores to meaningful drug discovery criteria — helping researchers decide which molecules to advance, flag, or set aside.
 
-Input files can be large (1000+ molecules). **Never read the full CSV into your context.** Instead, inspect only the headers to detect model IDs, fetch metadata from GitHub, then delegate all row-level processing to `scripts/process_molecules.py`. You read only the compact JSON summary that script produces.
+This is a **pre-deliverable audit**: the skill assumes the user has already done their virtual-screening homework (activity prediction, drug-likeness, diversity, earlier triage) and is now bringing a curated shortlist for final scoring. It is not a tool for processing raw screening libraries.
+
+Input files can contain hundreds of molecules. **Never read the full CSV into your context.** Instead, inspect only the headers to detect model IDs, fetch metadata from GitHub, then delegate all row-level processing to `scripts/process_molecules.py`. You read only the compact JSON summary that script produces.
+
+**Hard limit: this skill refuses to process inputs with more than 1000 molecules.** Users with larger sets must prefilter, not chunk. See Step 1 below.
 
 ## Parse Arguments
 
@@ -30,9 +34,17 @@ Input files can be large (1000+ molecules). **Never read the full CSV into your 
 
 ---
 
-## Step 1: Read Headers Only
+## Step 1: Check Size, Then Read Headers Only
 
-Use `Bash` to read just the header row — do **not** load the full file:
+First, count the rows to enforce the 1000-molecule limit. Use `Bash`:
+
+```bash
+wc -l <molecules-path>
+```
+
+The molecule count is `(line count) - 1` (header row). **If this exceeds 1000, stop immediately.** Do not fetch metadata, do not run the script. Tell the user the file has N molecules and that this skill is a **pre-deliverable audit** for late-stage virtual screening — it expects an already-narrowed candidate set. They need to prefilter their library (by activity, drug-likeness, diversity, or any earlier-stage triage) down to ≤ 1000 molecules before running it. Do **not** suggest splitting the file into chunks: chunking hides the prefiltering work and the scoring is only meaningful on a curated shortlist.
+
+Only if the count is ≤ 1000, read the header row — do **not** load the full file:
 
 ```bash
 head -1 <molecules-path>
@@ -51,7 +63,7 @@ Note the unique model IDs found and how many columns each contributes.
 
 For each unique model ID, fetch two files using `WebFetch`. No CLI or library needed — plain HTTP.
 
-See `references/ersilia-metadata-guide.md` for exact URL patterns and parsing guidance.
+See `references/ersilia-metadata-guide.md` for exact URL patterns and parsing guidance. See `references/ersilia-model-hub-guide.md` for the higher-level reporting contract (filtering-utility buckets, hard rule that `informational` / `ambiguous` columns are never filterable) and the model-recommendation flow used in Step 4.
 
 For each model, extract:
 - **From `run_columns.csv`**: per-column `name`, `direction`, `description`
@@ -133,6 +145,8 @@ If a fetch fails, include the column with `"want_high": null, "scoring_role": "i
 ## Step 3: Run the Processing Script
 
 Run `scripts/process_molecules.py` via `Bash`. The script reads the full CSV, scores all molecules using **only `scoring_role == "efficacy"` columns**, flags safety concerns from `scoring_role == "safety_flag"` columns, and writes a compact JSON summary.
+
+For the chemistry rules the script applies (Lipinski, Veber, CNS envelope, PAINS and other structural alerts) and their per-context exceptions (CNS, antibiotic, IV/topical, macrocycle/PROTAC/natural product), consult `references/drug-discovery-criteria.md`.
 
 ```bash
 python <skill_dir>/scripts/process_molecules.py \
@@ -250,6 +264,24 @@ plain-English summary of why it ranks here.
 - **Scoring**: ranked by <efficacy column(s)>
 - **Results**: N Promising | N Borderline | N Deprioritise
 
+### Ersilia columns used
+Show, for every Ersilia output column detected, which **filtering-utility bucket** it
+falls into and how the audit used it. Buckets and rules are defined in
+`references/ersilia-model-hub-guide.md` §Scenario A. The buckets map onto the
+`scoring_role` field from Step 2 — this table makes the mapping visible to the reader.
+
+| Column | eos ID | Bucket | Role in this audit |
+|---|---|---|---|
+| `inhibition_50um.eos4e40` | `eos4e40` | `filterable_quantitative` | Primary efficacy — drives ranking |
+| `ames.eos7m30` | `eos7m30` | `filterable_flag` | Safety flag — drops molecules with prob > 0.5 |
+| `logp.eos7m30` | `eos7m30` | `range_constrained` | Lipinski filter (≤ 5) |
+| `embedding_*.eos…` | `eos…` | `informational` | Not used for filtering; available for clustering |
+| `…` (fetch failed) | `eos…` | `ambiguous` | Listed in Caveats; not used for filtering |
+
+Hard rule: only `filterable_quantitative`, `filterable_flag`, and `range_constrained`
+columns may enter the score or a filter. `informational` and `ambiguous` columns
+appear here for transparency but never drove any decision.
+
 ### Top Candidates
 For each of the top 3–5 Promising molecules: SMILES or key, activity score,
 what the score means, any safety flags. Concise but informative — a medicinal
@@ -274,6 +306,28 @@ Read references/antibiotic-criteria.md for the full reasoning.
 - Which safety columns raised the most flags across the full set?
 - What fraction of top candidates have ≥1 safety flag?
 - Any molecule with 3+ safety flags should be highlighted explicitly.
+
+### Recommended additional Ersilia models
+Identify coverage gaps across three categories — **ADMET / physicochemical**,
+**antimicrobial activity** (matched to `--context` and target organisms inferred
+from the dataset), and **safety / toxicity flags** — and recommend 1–3 specific
+Ersilia models per uncovered category. Use the curated starting set in
+`references/ersilia-model-hub-guide.md` §Scenario B; fall back to the Airtable
+live lookup documented there when the curated set is insufficient. If a category
+is already fully covered by columns in the dataset, keep the heading and say
+_"Already covered"_ with the covering eos ID(s) — do not silently omit.
+
+Format per recommendation: ``[`eosXXXX`](https://github.com/ersilia-os/eosXXXX) — what it predicts. Why it fits this dataset. Caveats (if any).``
+
+#### ADMET / physicochemical
+- [`eos2lqb`](https://github.com/ersilia-os/eos2lqb) — Probability of high oral bioavailability. The dataset has activity and safety coverage but no absorption signal; this would help prioritise orally-deliverable hits.
+
+#### Antimicrobial activity
+- _Already covered_ — `eos9ivc` (antituberculosis activity) is present.
+
+#### Safety / toxicity
+- [`eos4tcc`](https://github.com/ersilia-os/eos4tcc) — Probability of hERG channel blockade. None of the existing columns flag cardiac liability.
+- [`eos5gge`](https://github.com/ersilia-os/eos5gge) — DILI prediction. Complements hERG for a minimum safety triage.
 
 ### Caveats
 - RDKit unavailable → Lipinski/PAINS/novelty not computed
