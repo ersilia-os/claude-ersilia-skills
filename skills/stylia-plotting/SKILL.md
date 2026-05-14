@@ -20,6 +20,7 @@ All Python figures at Ersilia are created with the **stylia** package, which wra
 - **Always** retrieve each subplot with `ax = axs.next()` — one call per subplot, in order.
 - **Never** call `plt.savefig()` or `plt.show()`. Always use `stylia.save_figure()`.
 - **Never** set axis labels, titles, or panel letters with `ax.set_xlabel()`, `ax.set_ylabel()`, `ax.set_title()`, or similar. Always use `stylia.label(ax, ...)` — it handles font sizes, colors, and panel letter formatting consistently.
+- **Always pass `xlabel` and `ylabel` to `stylia.label()`**, even when no label is needed — pass `xlabel=""` and `ylabel=""`. Omitting them causes stylia to insert a placeholder text.
 - When writing helper functions for a specific plot type, **always accept `ax` as an argument** rather than creating a figure inside the function. The caller owns the figure; the function only draws into the axis it receives.
 - **Set width and height automatically** based on the plot type — do not ask the user unless they want something specific:
   - Single panel, square data space (ROC curve, scatter, confusion matrix, heatmap): `width=0.5, height=0.5`
@@ -110,7 +111,15 @@ stylia.save_figure("figure.png")
 stylia.label(ax, xlabel="Time / s", ylabel="Signal", title="Overview", abc="A")
 ```
 
-Omit any keyword you don't need.
+**Always pass `xlabel` and `ylabel` explicitly**, even when no label is needed — use an empty string. Omitting them entirely causes stylia to insert a placeholder. You may omit `title` and `abc` freely.
+
+```python
+# Good — no axis labels needed, but still passed explicitly
+stylia.label(ax, xlabel="", ylabel="")
+
+# Bad — stylia will add a placeholder label
+stylia.label(ax)
+```
 
 ## Running Scripts
 
@@ -282,3 +291,4 @@ stylia.save_figure("figure.png")
 - Hardcoded hex colors — use `stylia.NamedColors()` or a palette/colormap
 - Setting `width` or `height` in `create_figure()` unless the user asks
 - Setting `s=`, `linewidth=`, `fontsize=` or any size/width parameter unless the user asks — stylia's defaults are correct
+- Calling `stylia.label(ax)` without `xlabel` and `ylabel` — always pass them explicitly, using `""` if no label is needed
