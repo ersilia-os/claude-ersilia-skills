@@ -25,7 +25,7 @@ Input files can contain hundreds of molecules. **Never read the full CSV into yo
 ## Parse Arguments
 
 - `<molecules-path>` (required): CSV file with molecule data and Ersilia model output columns
-- `--context <disease-or-target>` (optional): Therapeutic context, e.g. `"malaria"`, `"M. tuberculosis"`, `"hERG inhibition"`. Shapes how results are framed and adjusts thresholds (CNS targets get stricter rules).
+- `--context <disease-or-target>` (optional): Therapeutic context, e.g. `"malaria"`, `"M. tuberculosis"`, `"hERG inhibition"`. Shapes how results are framed and routes anti-infective contexts to the matching reference file (see `references/drug-discovery-criteria.md` §6).
 - `--mode <similar|novel>` (optional): Structural novelty mode for antibiotic campaigns.
   - `similar`: favour compounds resembling known antibiotics (lead optimisation, known mechanism)
   - `novel`: favour compounds structurally distinct from known antibiotics (first-in-class, avoids class-level resistance). For neglected tropical diseases, this is often the more scientifically interesting mode.
@@ -61,9 +61,18 @@ Note the unique model IDs found and how many columns each contributes.
 
 ## Step 2: Fetch Model Metadata from GitHub
 
-For each unique model ID, fetch two files using `WebFetch`. No CLI or library needed — plain HTTP.
+For all unique model IDs, fetch metadata and `run_columns.csv` in one shot using the helper script:
 
-See `references/ersilia-metadata-guide.md` for exact URL patterns and parsing guidance. See `references/ersilia-model-hub-guide.md` for the higher-level reporting contract (filtering-utility buckets, hard rule that `informational` / `ambiguous` columns are never filterable) and the model-recommendation flow used in Step 4.
+```bash
+python <skill_dir>/scripts/fetch_model_metadata.py eos4e40 eos7m30 [...] \
+    --output /tmp/model_meta_<timestamp>.json
+```
+
+The script handles the `metadata.json` → `metadata.yml` fallback, the version-pinned URL variant, and per-model 404s without aborting the batch. The output JSON is keyed by model ID with `metadata`, `columns`, `source`, and `errors` per model — see the script's docstring for the exact schema. If any model has a non-empty `errors` list, surface it in the report's Caveats and continue with the rest.
+
+If Bash is unavailable, fall back to `WebFetch` against the raw GitHub URLs documented in `references/ersilia-metadata-guide.md`.
+
+See `references/ersilia-metadata-guide.md` for the URL patterns and field-by-field interpretation. See `references/ersilia-model-hub-guide.md` for the higher-level reporting contract (filtering-utility buckets, hard rule that `informational` / `ambiguous` columns are never filterable) and the model-recommendation flow used in Step 4.
 
 For each model, extract:
 - **From `run_columns.csv`**: per-column `name`, `direction`, `description`
@@ -146,7 +155,7 @@ If a fetch fails, include the column with `"want_high": null, "scoring_role": "i
 
 Run `scripts/process_molecules.py` via `Bash`. The script reads the full CSV, scores all molecules using **only `scoring_role == "efficacy"` columns**, flags safety concerns from `scoring_role == "safety_flag"` columns, and writes a compact JSON summary.
 
-For the chemistry rules the script applies (Lipinski, Veber, CNS envelope, PAINS and other structural alerts) and their per-context exceptions (CNS, antibiotic, IV/topical, macrocycle/PROTAC/natural product), consult `references/drug-discovery-criteria.md`.
+For the chemistry rules the script applies (Lipinski, PAINS) and the broader catalogue of generalistic rules and anti-infective routing, consult `references/drug-discovery-criteria.md`.
 
 ```bash
 python <skill_dir>/scripts/process_molecules.py \

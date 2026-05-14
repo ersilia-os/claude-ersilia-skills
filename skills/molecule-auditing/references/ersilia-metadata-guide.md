@@ -2,6 +2,8 @@
 
 This file documents how to fetch and interpret metadata for Ersilia models directly from GitHub, with no CLI installation required.
 
+> **Helper script.** For a batch fetch in one call, use `scripts/fetch_model_metadata.py <eos_id> [<eos_id> ...] --output <path>`. It implements the URL patterns below, including the `metadata.json` → `metadata.yml` fallback, and returns per-model `metadata` + `columns` + `source` + `errors` in a single JSON. The URL patterns in this file remain authoritative — the script just automates them.
+
 ---
 
 ## URL Patterns

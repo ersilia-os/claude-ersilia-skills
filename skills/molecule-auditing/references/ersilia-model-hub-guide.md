@@ -106,7 +106,7 @@ When the curated set does not cover the gap — e.g., a pathogen outside the lis
 
 **Fallback — WebFetch**: GET the shared view URL above and parse the rendered HTML for model rows. Less reliable than the MCP path; only use when the MCP is unavailable.
 
-For any model found via live lookup, immediately fetch its per-model metadata using `ersilia-metadata-guide.md` to confirm `Title`, `Interpretation`, `Task`/`Subtask`, and the `run_columns.csv` schema before recommending it.
+For any model found via live lookup, immediately fetch its per-model metadata with `scripts/fetch_model_metadata.py <eos_id>` (or, as a fallback, the raw URLs in `ersilia-metadata-guide.md`) to confirm `Title`, `Interpretation`, `Task`/`Subtask`, and the `run_columns.csv` schema before recommending it.
 
 ### How to write a recommendation
 

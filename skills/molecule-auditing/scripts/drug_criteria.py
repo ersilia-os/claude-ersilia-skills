@@ -162,22 +162,6 @@ def muegge_violations(smiles):
     return len(v), v
 
 
-def cns_violations(smiles):
-    """CNS small-molecule envelope — Pajouhesh & Lenz, NeuroRx 2005;
-    Hitchcock & Pennington, J Med Chem 2006.
-    MW≤450, 1≤LogP≤5, TPSA≤90, HBD≤3."""
-    mol = _mol(smiles)
-    if mol is None:
-        return None, []
-    d = _descriptors_from_mol(mol)
-    v = []
-    if d["MW"]   > 450:           v.append(f"MW={d['MW']:.0f}")
-    if not (1 <= d["LogP"] <= 5): v.append(f"LogP={d['LogP']:.1f}")
-    if d["TPSA"] > 90:            v.append(f"TPSA={d['TPSA']:.0f}")
-    if d["HBD"]  > 3:             v.append(f"HBD={d['HBD']}")
-    return len(v), v
-
-
 def bro5_violations(smiles):
     """Beyond-Ro5 oral envelope — Doak, Over, Giordanetto & Kihlberg,
     Chem Biol 2014. MW≤1000, -2≤LogP≤10, HBD≤6, HBA≤15, RotB≤20, TPSA≤250."""
@@ -244,51 +228,17 @@ def n_aromatic_rings(smiles):
     return int(Lipinski.NumAromaticRings(mol)) if mol is not None else None
 
 
-def cns_mpo(smiles):
-    """CNS MPO — Wager, Hou, Verhoest & Villalobos, ACS Chem Neurosci 2010.
-
-    Multi-parameter desirability function over 6 properties:
-    ClogP, ClogD7.4, MW, TPSA, HBD, most-basic pKa. Each property is mapped to
-    a 0–1 desirability via trapezoidal/triangular functions; the sum (max 6)
-    is the score. Original cut-off: ≥4 favourable.
-
-    ClogD7.4 and pKa cannot be computed from SMILES with stock RDKit, so this
-    implementation returns a 4-property approximation (LogP, MW, TPSA, HBD;
-    max 4.0). Treat ≥2.7 as a rough equivalent to the 6-property ≥4 cut-off.
-    """
-    mol = _mol(smiles)
-    if mol is None:
-        return None
-    d = _descriptors_from_mol(mol)
-
-    def step_then_ramp(x, x_one, x_zero):
-        if x <= x_one:  return 1.0
-        if x >= x_zero: return 0.0
-        return 1.0 - (x - x_one) / (x_zero - x_one)
-
-    def trap(x, x1, x2, x3, x4):
-        if x <= x1 or x >= x4: return 0.0
-        if x2 <= x <= x3:      return 1.0
-        if x < x2:             return (x - x1) / (x2 - x1)
-        return (x4 - x) / (x4 - x3)
-
-    s_logp = step_then_ramp(d["LogP"], 3.0, 5.0)
-    s_mw   = step_then_ramp(d["MW"], 360.0, 500.0)
-    s_tpsa = trap(d["TPSA"], 20.0, 40.0, 90.0, 120.0)
-    s_hbd  = step_then_ramp(d["HBD"], 0.0, 3.5)
-    return s_logp + s_mw + s_tpsa + s_hbd
-
-
 def boiled_egg(smiles):
-    """BOILED-Egg — Daina & Zoete, ChemMedChem 2016. Predicts HIA (white) and
-    BBB (yolk) from TPSA and WLogP.
+    """BOILED-Egg — Daina & Zoete, ChemMedChem 2016. Predicts HIA (white
+    region) from TPSA and WLogP; the inner yolk region also predicts BBB
+    penetration but only matters for CNS contexts.
 
-    Returns "BBB" (yolk: both BBB+ and HIA+), "HIA" (white: HIA+, not BBB),
-    or "outside".
+    Returns "HIA" (white: HIA+), "BBB" (inner yolk: HIA+ and BBB+), or
+    "outside".
 
-    Uses a bounding-box approximation of the original ellipses (TPSA≤79 &
-    0.4≤WLogP≤6 for BBB; TPSA≤142 & -1.5≤WLogP≤5.9 for HIA). Consult the
-    paper for exact elliptical regions.
+    Uses a bounding-box approximation of the original ellipses (TPSA≤142
+    & -1.5≤WLogP≤5.9 for HIA; TPSA≤79 & 0.4≤WLogP≤6 for the BBB inner
+    region). Consult the paper for exact elliptical regions.
     """
     mol = _mol(smiles)
     if mol is None:
@@ -445,7 +395,6 @@ def evaluate(smiles, pIC50=None, alert_catalogs=("PAINS", "BRENK")):
         ("veber",    veber_violations),
         ("egan",     egan_violations),
         ("muegge",   muegge_violations),
-        ("cns",      cns_violations),
         ("bro5",     bro5_violations),
     ]:
         n, v = fn(smiles)
@@ -455,7 +404,6 @@ def evaluate(smiles, pIC50=None, alert_catalogs=("PAINS", "BRENK")):
     out["scores"]["qed"]            = qed_score(smiles)
     out["scores"]["fsp3"]           = fsp3(smiles)
     out["scores"]["aromatic_rings"] = n_aromatic_rings(smiles)
-    out["scores"]["cns_mpo_4prop"]  = cns_mpo(smiles)
     out["scores"]["boiled_egg"]     = boiled_egg(smiles)
     out["scores"]["pfi"]            = pfi(smiles)
     if pIC50 is not None:

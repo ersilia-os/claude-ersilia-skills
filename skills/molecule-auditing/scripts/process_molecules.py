@@ -22,7 +22,7 @@ Arguments:
                           flag_threshold: float or null (for safety_flag columns)
                           description: str
     --top-n             Number of top candidates to include in detail (default: 30)
-    --context           Therapeutic context string (optional, adjusts CNS thresholds)
+    --context           Therapeutic context string (optional, framed in report)
     --mode              Structural novelty mode: "similar" (prefer known-antibiotic-like
                         compounds) or "novel" (prefer structurally distinct compounds).
                         Requires RDKit. Loads reference SMILES from
@@ -132,25 +132,6 @@ def lipinski_violations(mol, Descriptors):
     if hbd  > 5:   viols.append(f"HBD={hbd}")
     if hba  > 10:  viols.append(f"HBA={hba}")
     return viols
-
-def cns_violations(mol, Descriptors):
-    mw   = Descriptors.MolWt(mol)
-    logp = Descriptors.MolLogP(mol)
-    hbd  = Descriptors.NumHDonors(mol)
-    tpsa = Descriptors.TPSA(mol)
-    viols = []
-    if mw   > 450: viols.append(f"MW={mw:.0f}>450")
-    if logp > 5 or logp < 1: viols.append(f"LogP={logp:.1f}")
-    if hbd  > 3:   viols.append(f"HBD={hbd}>3")
-    if tpsa > 90:  viols.append(f"TPSA={tpsa:.0f}>90")
-    return viols
-
-CNS_TERMS = {"cns", "brain", "bbb", "neurological", "alzheimer", "parkinson",
-             "schizophrenia", "epilepsy", "blood-brain"}
-
-def is_cns_context(context_str):
-    return any(t in context_str.lower() for t in CNS_TERMS)
-
 
 # ---------------------------------------------------------------------------
 # Antibiotic reference loading and Tanimoto similarity
@@ -293,7 +274,6 @@ def process(args):
     rdkit_objs = try_import_rdkit()
     Chem, Descriptors, DataStructs, AllChem, pains_catalog = rdkit_objs
     rdkit_available = Chem is not None
-    cns = is_cns_context(args.context)
 
     # Load antibiotic reference for novelty/similarity mode
     ref_mols, ref_fps = None, None
@@ -402,7 +382,7 @@ def process(args):
 
             activity_score = sum(scores) / len(scores) if scores else None
 
-            # Lipinski / CNS / PAINS
+            # Lipinski / PAINS
             lip_viols = []
             pains_flag = False
             mol_valid = True
@@ -414,8 +394,7 @@ def process(args):
                     mol_valid = False
                     n_invalid_smiles += 1
                 else:
-                    lip_viols = (cns_violations(mol, Descriptors)
-                                 if cns else lipinski_violations(mol, Descriptors))
+                    lip_viols = lipinski_violations(mol, Descriptors)
                     if pains_catalog:
                         entry = pains_catalog.GetFirstMatch(mol)
                         if entry:
@@ -560,7 +539,6 @@ def process(args):
         "n_scored":            n_scored,
         "n_invalid_smiles":    n_invalid_smiles,
         "rdkit_available":     rdkit_available,
-        "cns_mode":            cns,
         "models_detected":     model_ids,
         "efficacy_columns":    [{"col": c, "feature": f, "model": m, "want_high": wh}
                                 for c, f, m, wh in efficacy_cols],

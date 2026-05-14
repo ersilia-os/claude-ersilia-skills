@@ -18,7 +18,6 @@ Each rule below is a pass/fail filter over physicochemical descriptors. The summ
 | **Veber** | — | — | — | — | ≤140 | ≤10 | — | Oral bioavailability (Lipinski complement) |
 | **Egan** | — | ≤5.88 | — | — | ≤131.6 | — | — | Passive absorption |
 | **Muegge** | 200–600 | −2 to 5 | ≤5 | ≤10 | ≤150 | ≤15 | rings≤7, C≥4, het≥1 | Conservative drug-likeness |
-| **CNS** | ≤450 | 1–5 | ≤3 | — | ≤90 | — | — | CNS / BBB penetration |
 | **bRo5 (Doak)** | ≤1000 | −2 to 10 | ≤6 | ≤15 | ≤250 | ≤20 | — | Beyond-Ro5 oral space (macrocycles, etc.) |
 
 ### 1.1 Lipinski's Rule of Five
@@ -39,10 +38,7 @@ Egan, Merz & Baldwin, *J Med Chem* 2000. Two-property filter (TPSA, LogP) predic
 ### 1.6 Muegge filter
 Muegge, Heald & Brittelli, *J Med Chem* 2001. Bayer's conservative drug-likeness filter — adds ring count, carbon count and heteroatom count to Lipinski/Veber. Stricter than Lipinski on the low-MW end (excludes fragments). → `muegge_violations(smiles)`
 
-### 1.7 CNS small-molecule envelope
-Pajouhesh & Lenz, *NeuroRx* 2005; Hitchcock & Pennington, *J Med Chem* 2006. Stricter envelope for blood–brain barrier penetration: MW ≤450, LogP 1–5 (too hydrophilic also fails), TPSA ≤90, HBD ≤3. See also CNS MPO (§3.4) for a continuous variant. → `cns_violations(smiles)`
-
-### 1.8 Beyond-Ro5 (bRo5)
+### 1.7 Beyond-Ro5 (bRo5)
 Doak, Over, Giordanetto & Kihlberg, *Chem Biol* 2014. Empirical envelope for oral drugs that violate Ro5 — covers macrocycles, peptidomimetics, and many natural products. Use this as the filter when working in the bRo5 space rather than discarding compounds for Lipinski violations. → `bro5_violations(smiles)`
 
 ---
@@ -73,15 +69,10 @@ Lovering, Bikker & Humblet, *J Med Chem* 2009 ("Escape from flatland"). Fsp³ �
 ### 3.3 Aromatic ring count
 Ritchie & Macdonald, *Drug Discov Today* 2009. > 3 aromatic rings worsens solubility, hERG, CYP and overall developability. Aim for ≤ 3. → `n_aromatic_rings(smiles)`
 
-### 3.4 CNS MPO — CNS Multi-Parameter Optimization
-Wager, Hou, Verhoest & Villalobos, *ACS Chem Neurosci* 2010. Sum of six trapezoidal/triangular desirability functions over ClogP, ClogD₇.₄, MW, TPSA, HBD, most-basic pKa. Range 0–6; ≥ 4 favourable.
+### 3.4 BOILED-Egg
+Daina & Zoete, *ChemMedChem* 2016. Two-region classifier on the TPSA × WLogP plane: the white region predicts human intestinal absorption (HIA+). The inner yolk region is sometimes used to predict BBB penetration; ignore that aspect outside CNS contexts. Returns `"HIA"`, `"BBB"` (inside yolk) or `"outside"`. The implementation uses a bounding-box approximation of the original ellipses. → `boiled_egg(smiles)`
 
-ClogD₇.₄ and pKa require an external predictor and are not available from SMILES alone in stock RDKit. The implementation in `drug_criteria.py` returns the 4-property approximation (LogP, MW, TPSA, HBD; max 4.0); use ≥ 2.7 as a rough equivalent to the original ≥ 4 cut-off. → `cns_mpo(smiles)`
-
-### 3.5 BOILED-Egg
-Daina & Zoete, *ChemMedChem* 2016. Two-region classifier on the TPSA × WLogP plane: white region predicts human intestinal absorption (HIA+), yolk (inside white) predicts BBB penetration. Returns `"BBB"`, `"HIA"` or `"outside"`. The implementation uses a bounding-box approximation of the original ellipses. → `boiled_egg(smiles)`
-
-### 3.6 Synthetic accessibility
+### 3.5 Synthetic accessibility
 **SAscore** — Ertl & Schuffenhauer, *J Cheminform* 2009. Score 1 (easy) to 10 (hard); ≤ 4 broadly considered tractable. Ships in RDKit's `Contrib/SA_Score` directory. Useful as a sanity check on hits from generative or large virtual libraries.
 
 Alternatives in the literature, not implemented here: **SCScore** (Coley et al., *J Chem Inf Model* 2018; learned from reaction corpora), **RAscore** (Thakkar et al., *Chem Sci* 2021; deep-learning retrosynthesis classifier), **SYBA** (Voráč et al., *J Cheminform* 2020).
@@ -128,11 +119,10 @@ Trigger keywords from the `--context` argument switch which ruleset(s) apply. Ma
 
 | Keyword class | Examples | Apply | Comment |
 |---|---|---|---|
-| CNS | `CNS`, `brain`, `BBB`, `neurological`, `Alzheimer`, `Parkinson`, `schizophrenia`, `epilepsy` | CNS envelope (§1.7) + CNS MPO (§3.4) | Strictest filter set |
 | Anti-infective | `antibiotic`, `antimicrobial`, `antibacterial`, `antifungal`, `antimalarial`, `antiparasitic`, `anti-infective` | See [`shared-anti-infective-criteria.md`](./shared-anti-infective-criteria.md) and the matching per-bucket file (`gram-negative-criteria.md`, `antimycobacterial-criteria.md`, etc.) | Many classes break Ro5 — don't auto-reject |
 | Oral | `oral`, `oral bioavailability` | Lipinski + Veber | Default |
-| Parenteral / topical / inhaled | `IV`, `intravenous`, `topical`, `inhaled` | bRo5 envelope (§1.8) | Loosen size & lipophilicity |
-| Beyond-Ro5 chemotypes | `PROTAC`, `degrader`, `macrocycle`, `natural product` | bRo5 envelope (§1.8) | Ro5 violations expected |
+| Parenteral / topical / inhaled | `IV`, `intravenous`, `topical`, `inhaled` | bRo5 envelope (§1.7) | Loosen size & lipophilicity |
+| Beyond-Ro5 chemotypes | `PROTAC`, `degrader`, `macrocycle`, `natural product` | bRo5 envelope (§1.7) | Ro5 violations expected |
 | Fragment screen | `fragment`, `FBDD` | Rule of 3 (§1.2) | Tighter envelope |
 | (no match) | — | Lipinski + Veber | Default to oral small-molecule |
 
@@ -163,7 +153,7 @@ report = evaluate("CCN(CC)CCNC(=O)c1cc(Cl)c(N)cc1OC", pIC50=7.2,
 # report["alerts"]              = {}  # nothing fired
 ```
 
-The molecule-auditing script (`process_molecules.py`) currently enforces Lipinski and PAINS directly; the other rules in this module are available for reports that need broader coverage (CNS, bRo5, fragments, structural-alert panels beyond PAINS) without re-implementing.
+The molecule-auditing script (`process_molecules.py`) currently enforces Lipinski and PAINS directly; the other rules in this module are available for reports that need broader coverage (bRo5, fragments, structural-alert panels beyond PAINS) without re-implementing.
 
 ---
 
@@ -176,8 +166,6 @@ The molecule-auditing script (`process_molecules.py`) currently enforces Lipinsk
 - Veber, Johnson, Cheng, Smith, Ward, Kopple. *J Med Chem* 2002, 45, 2615–2623. — RotB, TPSA.
 - Egan, Merz, Baldwin. *J Med Chem* 2000, 43, 3867–3877. — Passive absorption.
 - Muegge, Heald, Brittelli. *J Med Chem* 2001, 44, 1841–1846. — Bayer drug-likeness.
-- Pajouhesh, Lenz. *NeuroRx* 2005, 2, 541–553. — CNS drug envelope.
-- Hitchcock, Pennington. *J Med Chem* 2006, 49, 7559–7583. — CNS property bands.
 - Doak, Over, Giordanetto, Kihlberg. *Chem Biol* 2014, 21, 1115–1142. — bRo5.
 
 **Risk flags**
@@ -188,7 +176,6 @@ The molecule-auditing script (`process_molecules.py`) currently enforces Lipinsk
 - Bickerton, Paolini, Besnard, Muresan, Hopkins. *Nat Chem* 2012, 4, 90–98. — QED.
 - Lovering, Bikker, Humblet. *J Med Chem* 2009, 52, 6752–6756. — Fsp³.
 - Ritchie, Macdonald. *Drug Discov Today* 2009, 14, 1011–1020. — Aromatic rings.
-- Wager, Hou, Verhoest, Villalobos. *ACS Chem Neurosci* 2010, 1, 435–449. — CNS MPO.
 - Daina, Zoete. *ChemMedChem* 2016, 11, 1117–1121. — BOILED-Egg.
 - Ertl, Schuffenhauer. *J Cheminform* 2009, 1, 8. — SAscore.
 
