@@ -1,11 +1,12 @@
 # Ersilia Model Hub Guide (for molecule auditing)
 
-This guide complements `ersilia-metadata-guide.md`. That file documents the per-model **mechanics** (URLs, JSON/CSV schemas, the `direction` vs `want_high` distinction, the `scoring_role` taxonomy). This file documents the **judgment** layered on top of those mechanics:
+This guide complements `ersilia-metadata-guide.md`. That file documents the per-model **mechanics** (URLs, JSON/CSV schemas, the `direction` vs `want_high` distinction, the `scoring_role` taxonomy). This file documents the **judgment** layered on top of those mechanics, organised as a strict three-tier hierarchy:
 
-- **Scenario A** — the dataset already contains Ersilia model output columns. Decide which columns are useful for filtering and which are not, and show that decision in the audit report.
-- **Scenario B** — propose additional Ersilia models that would meaningfully augment the dataset, and recommend them in the audit report.
+- **Tier 1 — In-dataset models.** eos IDs whose output columns are present in the CSV. *Considered* — they drive scoring and filtering, and every one of them must be accounted for in the audit report.
+- **Tier 2 — Curated relevant set.** Hand-maintained list of Ersilia models known to be useful for typical molecule-auditing scenarios (ADMET, antimicrobial activity, safety). *Suggested first* whenever a category gap is found. Source of truth: `curated_models.yaml`.
+- **Tier 3 — Full Ersilia Model Hub (last resort).** The live Airtable catalogue (~170 Ready models). *Suggested only* when the curated set has no model matching **this dataset's specific context** — pathogen, target, or property — even if the category is abstractly covered by tier 2.
 
-Both scenarios depend on knowing each model's metadata. Always start by following the fetch workflow in `ersilia-metadata-guide.md`.
+Apply the tiers in order: classify tier 1 first, then identify gaps and fill them from tier 2, escalating to tier 3 only on context-fit failure. All tiers depend on knowing each model's metadata — always start by fetching it via `scripts/fetch_model_metadata.py` (see `ersilia-metadata-guide.md`).
 
 ---
 
@@ -15,7 +16,7 @@ The [Ersilia Model Hub](https://github.com/ersilia-os/ersilia) is an open-source
 
 ---
 
-## Scenario A — Interpreting Ersilia columns already in the dataset
+## Tier 1 — Interpreting Ersilia columns already in the dataset
 
 The classification rules — what a column is *for*, whether it is `efficacy` / `safety_flag` / `beneficial_admet` / `physicochemical` / `info`, and whether `want_high` is `true` / `false` / `null` — are already specified in `ersilia-metadata-guide.md` (see its §"Scoring Role and Desirability" and §"Common Ersilia ADMET column patterns"). Do not duplicate that reasoning here; do it once per column following the existing guide.
 
@@ -33,64 +34,34 @@ What this skill adds is a **reporting contract**: every Ersilia column in the da
 
 ---
 
-## Scenario B — Recommending additional Ersilia models
+## Tier 2 — Curated relevant set
 
-After classifying the columns present, ask: **what is structurally missing from this dataset that an Ersilia model could supply?** Cover three categories, in order:
+After classifying tier-1 columns, ask: **what is structurally missing from this dataset that an Ersilia model could supply?** Cover three categories, in order:
 
 1. **ADMET / physicochemical properties** — absorption, solubility, permeability, plasma protein binding, metabolic stability, BBB penetration. A screen without any ADMET coverage cannot meaningfully prioritise for downstream development.
-2. **Antibiotic / antimicrobial activity** — pathogen-specific activity. Match against the disease context inferred from `--context`, `Target Organism` metadata, or — failing both — the dataset's apparent focus.
+2. **Antibiotic / antimicrobial activity** — pathogen-specific activity. Match against `--context`, `Target Organism` metadata, or the dataset's apparent disease focus.
 3. **Safety / toxicity flags** — hERG, cardiotoxicity, DILI, Tox21, clinical-trial toxicity, adverse drug reactions. A hit list without safety triage is incomplete.
 
-For each category not already covered by the dataset's columns, recommend **1–3 specific Ersilia models** with their eos IDs, drawn from the curated starting set below, or from a live lookup when the curated set is insufficient.
+For each uncovered category, **recommend 1–3 models from `curated_models.yaml`** (sibling file in this directory). The YAML is the source of truth — Read it directly and pick by `id`, `pathogen`, `want_high`, and `fit`. Do not maintain a parallel list in this doc.
 
-### Curated starting set
+**A few illustrative entries** (full list in the YAML):
 
-Snapshot from the Ersilia Model Hub Airtable on 2026-05-14. Status `Ready`. If a model here looks stale or wrong, fall back to the live lookup (next section).
+- **ADMET** — `eos7m30` (multi-endpoint ADMET, one-stop coverage), `eos2lqb` (oral bioavailability), `eos1amr` (BBB penetration — context-dependent).
+- **Antimicrobial** — `eos4e40` (*E. coli*), `eos9ivc` (*M. tuberculosis*), `eos4rta` (*P. falciparum* / antimalarial), `eos3lyd` (gram-negative efflux evader — useful as a secondary filter).
+- **Safety** — `eos4tcc` (BayeshERG / hERG blockade), `eos5gge` (DILI), `eos69p9` (Tox21 panel).
 
-#### ADMET / physicochemical
+**When tier 2 doesn't fit** — if no curated model matches *this dataset's* pathogen, target, or property (not merely the category), escalate to tier 3. See the trigger rules in the next section.
 
-| eos ID | Title | What it predicts | `want_high` |
-|---|---|---|---|
-| `eos7m30` | ADMET properties prediction | Multi-endpoint ADMET (physchem + classification tasks). One-stop ADMET coverage when the dataset has none. | per-column (mixed) |
-| `eos2lqb` | Human oral bioavailability | Probability of high oral bioavailability (HOB > 20% / > 50%). | `true` |
-| `eos1amr` | Blood-brain barrier penetration | Probability of crossing the BBB. Critical for CNS targets; flag for non-CNS programmes. | context-dependent |
-| `eos9tyg` | PAMPA permeability | Probability of being **poorly** permeable (logPeff < 1). Note inverted desirability. | `false` |
-| `eos31ve` | Human Liver Microsomal Stability | Probability of being unstable in HLM (t½ ≤ 30 min). | `false` |
-| `eos22io` | Plasma Protein Binding | Fraction PPB 0–1. High (> 0.8) reduces free drug. | `false` (usually) |
-| `eos9ym3` | MRlogP | Predicted LogP. Range-constrained (Lipinski ≤ 5). | `null` |
+---
 
-#### Antibiotic / antimicrobial activity
+## Tier 3 — Full Ersilia Model Hub lookup (last resort)
 
-| eos ID | Title | Pathogen / scope | `want_high` |
-|---|---|---|---|
-| `eos4e40` | Broad spectrum antibiotic activity | *E. coli* growth inhibition at 50 µM. | `true` |
-| `eos18ie` | *S. aureus* activity | Probability of growth inhibition (80% cut at 50 µM). | `true` |
-| `eos3804` | *A. baumannii* growth inhibition | High-priority ESKAPE pathogen. | `true` |
-| `eos5xng` | *B. cenocepacia* inhibition | Drug-resistant pathogen, CF-relevant. | `true` |
-| `eos9ivc` | Antituberculosis activity | *M. tuberculosis* MIC50/MIC90 inhibition. | `true` |
-| `eos46ev` | *M. tuberculosis* inhibitor | M.tb inhibition (IC50 < 5 µM). | `true` |
-| `eos4rta` | Antimalarial (MMV) | *P. falciparum* NF54 inhibition. | `true` |
-| `eos2gth` | MAIP antimalarial | Antimalarial potential score. | `true` |
-| `eos3lyd` | Efflux pump avoidance | Probability of being an efflux evader (gram-negative). Useful as a secondary filter alongside primary activity. | `true` |
-| `eos7ike` | eNTRy rules (gram-negative) | Three binary flags for low globularity, low rotatable bonds, primary amine — gram-negative penetration heuristic. | `true` (flags) |
-| `eos2xeq` | Similarity to known antibiotics | Use with `--mode similar` / `--mode novel` to bias toward known-like or first-in-class chemotypes. | context-dependent |
+Escalate to tier 3 **only** when the curated set in `curated_models.yaml` has no model that fits the dataset's specific context. The trigger is **context-fit, not category coverage**:
 
-#### Safety / toxicity flags
-
-| eos ID | Title | What it predicts | `want_high` |
-|---|---|---|---|
-| `eos4tcc` | BayeshERG | Probability of hERG channel blockade (IC50 ≤ 10 µM cut-off). | `false` |
-| `eos1pu1` | Cardiotoxicity Classifier | Probability a compound is cardiotoxic. Complements hERG. | `false` |
-| `eos5gge` | DILI (early prediction) | 10 DILI-related endpoints; threshold for DILI active = 0.16. | `false` |
-| `eos21q7` | InterDILI | Probability of drug-induced liver injury. | `false` |
-| `eos69p9` | Tox21 panel | Probability of toxicity across the 12 Tox21 tasks. | `false` |
-| `eos481p` | ToxCast panel | Probability of activity across 617 toxicity-relevant biological targets. | `false` |
-| `eos6fza` | Toxicity at clinical-trial stage | FDA-approval and clinical-tox probability. Clintox-style. | `false` (for tox) |
-| `eos77w8` | Adverse Drug Reactions | Predicted ADRs across 27 groups. | `false` |
-
-### Live lookup (fallback / extension)
-
-When the curated set does not cover the gap — e.g., a pathogen outside the list above, or a more specialised ADMET endpoint — query the Ersilia Model Hub catalogue directly.
+- ✅ Escalate: dataset targets *Neisseria gonorrhoeae*. Tier 2 has *S. aureus*, *A. baumannii*, *B. cenocepacia*, etc. — antimicrobial is "covered" abstractly but no *N. gonorrhoeae* model is present.
+- ✅ Escalate: dataset is a *Schistosoma mansoni* screen. Tier 2 has no antiparasitic helminth model.
+- ✅ Escalate: dataset needs a CYP2C9-specific inhibition predictor. Tier 2 has ADMET but no CYP2C9 model.
+- ❌ Do **not** escalate just to fish for more options: if `eos4tcc` (hERG) is already a fine fit for a cardiac-safety gap, don't query the hub for alternatives.
 
 **Source**: Airtable base `appR6ZwgLgG8RTdoU`, table `Models` (`tblAfOWRbA7bI1VTB`). Public shared view: <https://airtable.com/appR6ZwgLgG8RTdoU/shr7scXQV3UYqnM6Q/tblAfOWRbA7bI1VTB>.
 
@@ -101,16 +72,18 @@ When the curated set does not cover the gap — e.g., a pathogen outside the lis
    - `baseId = "appR6ZwgLgG8RTdoU"`, `tableId = "tblAfOWRbA7bI1VTB"`,
    - `fieldIds = ["Identifier", "Title", "Interpretation", "Subtask", "Biomedical Area", "Target Organism", "Tag", "Status"]`,
    - filter on `Status = "Ready"` (singleSelect — use `get_table_schema` first to resolve the choice ID),
-   - and a `contains` filter on `Title`, `Tag`, `Biomedical Area`, or `Target Organism` matching the gap (e.g. `"Schistosoma"`, `"cytochrome"`, `"solubility"`).
+   - and a `contains` filter on `Title`, `Tag`, `Biomedical Area`, or `Target Organism` matching the gap (e.g. `"Neisseria"`, `"Schistosoma"`, `"CYP2C9"`).
 3. The table has ~170 Ready models — page through with `cursor` if needed.
 
-**Fallback — WebFetch**: GET the shared view URL above and parse the rendered HTML for model rows. Less reliable than the MCP path; only use when the MCP is unavailable.
+**Fallback — WebFetch**: GET the shared view URL above and parse the rendered HTML. Less reliable than the MCP path; only use when the MCP is unavailable.
 
-For any model found via live lookup, immediately fetch its per-model metadata with `scripts/fetch_model_metadata.py <eos_id>` (or, as a fallback, the raw URLs in `ersilia-metadata-guide.md`) to confirm `Title`, `Interpretation`, `Task`/`Subtask`, and the `run_columns.csv` schema before recommending it.
+For any model found via tier-3 lookup, immediately fetch its per-model metadata with `scripts/fetch_model_metadata.py <eos_id>` (or, as a fallback, the raw URLs in `ersilia-metadata-guide.md`) to confirm `Title`, `Interpretation`, `Task`/`Subtask`, and the `run_columns.csv` schema before recommending it.
 
-### How to write a recommendation
+---
 
-For each recommended model, the report must state, in this order:
+## Recommendation format (applies to tier 2 and tier 3)
+
+Recommendations from tier 2 and tier 3 use the **same format** in the audit report — the reader does not need to know which tier a suggestion came from. For each recommended model, the report must state, in this order:
 
 1. **eos ID** as a code span, linked to `https://github.com/ersilia-os/{model_id}`.
 2. **What it predicts** — one sentence, drawn from the model's `Interpretation` (preferred) or `Title`.

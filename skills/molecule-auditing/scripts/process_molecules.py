@@ -50,6 +50,17 @@ import argparse
 import os
 from pathlib import Path
 
+# RDKit is a hard requirement. The molecule-auditing skill's Step 0 enforces
+# this before invoking the script; if you're invoking it directly, make sure
+# your Python interpreter has RDKit installed.
+from rdkit import Chem
+from rdkit.Chem import Descriptors, DataStructs, AllChem
+from rdkit.Chem.FilterCatalog import FilterCatalog, FilterCatalogParams
+
+_PAINS_PARAMS = FilterCatalogParams()
+_PAINS_PARAMS.AddCatalog(FilterCatalogParams.FilterCatalogs.PAINS)
+PAINS_CATALOG = FilterCatalog(_PAINS_PARAMS)
+
 
 # ---------------------------------------------------------------------------
 # Argument parsing
@@ -104,22 +115,8 @@ def parse_unknown_columns(headers, smiles_col, key_col, score_cols):
 
 
 # ---------------------------------------------------------------------------
-# RDKit (optional)
+# RDKit-based helpers
 # ---------------------------------------------------------------------------
-
-def try_import_rdkit():
-    try:
-        from rdkit import Chem
-        from rdkit.Chem import Descriptors, DataStructs
-        from rdkit.Chem import AllChem
-        from rdkit.Chem.FilterCatalog import FilterCatalog, FilterCatalogParams
-        params = FilterCatalogParams()
-        params.AddCatalog(FilterCatalogParams.FilterCatalogs.PAINS)
-        catalog = FilterCatalog(params)
-        return Chem, Descriptors, DataStructs, AllChem, catalog
-    except ImportError:
-        return None, None, None, None, None
-
 
 def lipinski_violations(mol, Descriptors):
     mw   = Descriptors.MolWt(mol)
@@ -271,13 +268,9 @@ def process(args):
     with open(args.metadata) as f:
         col_meta = json.load(f)
 
-    rdkit_objs = try_import_rdkit()
-    Chem, Descriptors, DataStructs, AllChem, pains_catalog = rdkit_objs
-    rdkit_available = Chem is not None
-
     # Load antibiotic reference for novelty/similarity mode
     ref_mols, ref_fps = None, None
-    if args.mode and rdkit_available:
+    if args.mode:
         ref_mols, ref_fps = load_antibiotic_reference(args.skill_dir, Chem, AllChem)
         if ref_fps is None:
             print(f"Warning: --mode {args.mode} requested but no reference SMILES loaded "
@@ -388,20 +381,19 @@ def process(args):
             mol_valid = True
             max_sim = None
 
-            if rdkit_available and smiles_val:
+            if smiles_val:
                 mol = Chem.MolFromSmiles(smiles_val)
                 if mol is None:
                     mol_valid = False
                     n_invalid_smiles += 1
                 else:
                     lip_viols = lipinski_violations(mol, Descriptors)
-                    if pains_catalog:
-                        entry = pains_catalog.GetFirstMatch(mol)
-                        if entry:
-                            pains_flag = True
+                    entry = PAINS_CATALOG.GetFirstMatch(mol)
+                    if entry:
+                        pains_flag = True
 
                     # Tanimoto similarity to antibiotic reference set
-                    if ref_fps and AllChem:
+                    if ref_fps:
                         try:
                             qfp = AllChem.GetMorganFingerprintAsBitVect(
                                 mol, radius=2, nBits=2048)
@@ -538,7 +530,6 @@ def process(args):
         "n_total":             n_total,
         "n_scored":            n_scored,
         "n_invalid_smiles":    n_invalid_smiles,
-        "rdkit_available":     rdkit_available,
         "models_detected":     model_ids,
         "efficacy_columns":    [{"col": c, "feature": f, "model": m, "want_high": wh}
                                 for c, f, m, wh in efficacy_cols],
@@ -555,11 +546,9 @@ def process(args):
         "novelty_stats":       novelty_stats,
         "column_stats":        column_stats,
         "caveats": {
-            "rdkit_missing":           not rdkit_available,
             "unknown_cols":            len(unknown_cols) > 0,
             "no_efficacy_cols":        len(efficacy_cols) == 0,
             "no_safety_flag_metadata": not safety_flag_cols,
-            "mode_without_rdkit":      bool(args.mode and not rdkit_available),
         }
     }
 

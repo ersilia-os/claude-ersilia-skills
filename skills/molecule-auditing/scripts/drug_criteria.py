@@ -4,6 +4,9 @@ property rules and scores.
 See ../references/drug-discovery-criteria.md for thresholds, citations, and
 context-of-use guidance.
 
+RDKit is a hard requirement; importing this module without RDKit raises
+ImportError at import time.
+
 Public functions take a SMILES string and return one of:
   - (n_violations: int, violations: list[str]) for hard filters
   - float for composite scores
@@ -17,20 +20,12 @@ None, flags return None, alerts return {}.
 
 from __future__ import annotations
 
-try:
-    from rdkit import Chem
-    from rdkit.Chem import Descriptors, Lipinski, QED, Crippen
-    from rdkit.Chem.FilterCatalog import FilterCatalog, FilterCatalogParams
-    RDKIT_AVAILABLE = True
-except ImportError:
-    RDKIT_AVAILABLE = False
+from rdkit import Chem
+from rdkit.Chem import Descriptors, Lipinski, QED, Crippen
+from rdkit.Chem.FilterCatalog import FilterCatalog, FilterCatalogParams
 
 
 def _mol(smiles):
-    if not RDKIT_AVAILABLE:
-        raise ImportError(
-            "RDKit is required for drug_criteria. Install via `pip install rdkit`."
-        )
     return Chem.MolFromSmiles(smiles) if smiles else None
 
 
@@ -317,7 +312,7 @@ _CATALOG_MAP = None
 
 def _get_catalog_map():
     global _CATALOG_MAP
-    if _CATALOG_MAP is None and RDKIT_AVAILABLE:
+    if _CATALOG_MAP is None:
         catalogs = FilterCatalogParams.FilterCatalogs
         _CATALOG_MAP = {
             "PAINS":   catalogs.PAINS,

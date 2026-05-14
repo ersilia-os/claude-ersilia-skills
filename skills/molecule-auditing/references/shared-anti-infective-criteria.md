@@ -93,6 +93,47 @@ The full table of Ersilia output column patterns and their recommended `scoring_
 - **P-gp efflux column** — relevant everywhere, but mandatory caveat for gram-negative (AcrAB-TolC is a major resistance mechanism).
 - **Bioavailability / HIA columns** — pin to oral indications only; IV-only anti-infectives (echinocandins, polymyxins, amphotericin B) do not need oral PK.
 
+## Major antibacterial classes at a glance
+
+Compact reference for scaffold recognition. Bucket-specific files cover mechanism, resistance, and SAR depth; this table is for fast pattern matching when reading a hit's structure or scoring a Tanimoto similarity.
+
+| Class | Mechanism | Typical MW (Da) | LogP range | Key structural features | Primary bucket |
+|---|---|---|---|---|---|
+| β-lactams | Cell wall (PBP inhibition) | 300–500 | −1 to 2 | β-lactam ring; low logP | gram-positive (some gram-neg) |
+| Cephalosporins | Cell wall (PBP) | 350–550 | −2 to 1 | β-lactam + 6-membered fused ring + side chains | gram-negative / gram-positive |
+| Carbapenems | Cell wall (PBP, β-lactamase-stable) | 300–500 | −3 to 0 | β-lactam + carbapenem ring + thio-side-chain | gram-negative |
+| Fluoroquinolones | DNA gyrase / Topo IV | 300–450 | −1 to 2 | Quinolone core + C-6 F + piperazine | gram-negative (broad) |
+| Aminoglycosides | Ribosome (30S) | 400–800 | −6 to −2 | Multiple amino sugars; very hydrophilic | gram-negative |
+| Macrolides | Ribosome (50S) | 700–900 | 2 to 4 | Large lactone ring; complex stereochemistry | gram-positive |
+| Tetracyclines | Ribosome (30S) | 400–550 | −1 to 1 | Naphthacene/polycyclic core | gram-negative (broad) |
+| Glycopeptides | Cell wall (lipid II) | 1100–1800 | −3 to 2 | Peptide scaffold, glycosylated | gram-positive |
+| Lipopeptides | Membrane disruption (Ca²⁺) | 1500–1700 | variable | Cyclic peptide + acyl tail | gram-positive |
+| Sulfonamides | Folate synthesis (DHPS) | 200–350 | 0 to 2 | Sulfonamide group + aniline | broad |
+| Diaminopyrimidines | Folate synthesis (DHFR) | 250–350 | 0 to 2 | 2,4-diaminopyrimidine | broad |
+| Oxazolidinones | Ribosome (50S, initiation) | 300–450 | 0 to 3 | Oxazolidinone ring + acetamidomethyl | gram-positive |
+| Nitroimidazoles | Reductive activation (DNA/protein) | 150–500 | −0.5 to 2 | Imidazole with nitro group | antikinetoplastid / antimycobacterial / anaerobic |
+| Nitrofurans | Reductive activation (DNA) | 200–300 | −0.5 to 1 | Furan with nitro group | gram-negative (UTI) / antikinetoplastid |
+| Rifamycins | RNA polymerase | 700–900 | 2 to 5 | Ansamycin macrocycle | antimycobacterial |
+| Polymyxins | Outer membrane / LPS | 1000–1200 | 0 to 4 | Cyclic polycationic lipopeptide | gram-negative (last-resort) |
+| Chloramphenicol | Ribosome (50S) | 300–350 | 1 to 2 | Dichloroacetamide + nitrobenzene | broad |
+| Lincosamides | Ribosome (50S) | 400–500 | 1 to 3 | Aminosugar + thiomethyl + amide | gram-positive |
+| Streptogramins | Ribosome (50S, synergistic pair) | 500–900 | 1 to 4 | Two-component (A + B) macrocyclic | gram-positive |
+| Diarylquinolines | ATP synthase (TB-specific) | 500–600 | 5 to 7 | Quinoline + naphthalene + amine | antimycobacterial |
+
+## Tanimoto threshold guidance
+
+When `--mode similar` or `--mode novel` is set, the script computes Morgan fingerprint (radius=2, 2048 bits) Tanimoto similarity against the active bucket's reference SMILES file. The bands below are the standard interpretation:
+
+- **≥ 0.5** — likely same or closely related scaffold (analog). Inherits class-level resistance risk; preferred under `--mode similar` for lead-optimisation campaigns.
+- **0.3–0.5** — broadly class-related, shares key pharmacophore elements. Could still face partial cross-resistance.
+- **< 0.3** — structurally distinct → `novelty_flag = True`. Preferred under `--mode novel`; scientifically valuable for resistance-breaking and first-in-class campaigns.
+
+The 0.3 novelty cutoff is conservative (generous about calling something novel). Treat Tanimoto as a continuous signal in narrative — a compound at 0.28 may still share a partial scaffold worth noting. The hard cutoff is only used for the classification penalty under `--mode novel`.
+
+## Reference SMILES sources
+
+Per-bucket reference compound lists live in `assets/reference_<bucket>.csv` (one file per `--type` value, excluding `agnostic`). SMILES are drawn from PubChem canonical forms; some complex natural products (macrolides, glycopeptides, aminoglycosides, lipopeptides) use simplified stereochemistry — they serve for scaffold-level similarity, not exact 3D matching. The lists are intentionally short (8–14 compounds per bucket) to cover the major chemical classes without becoming burdensome to maintain; Ersilia or users may extend them via `--skill-dir` and a custom asset directory. Property windows in each per-bucket criteria file are regenerated from these CSVs by `scripts/compute_reference_properties.py`.
+
 ## References
 
 | # | Author, Year | Title | Source | Link |
